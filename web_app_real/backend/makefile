@@ -9,7 +9,7 @@ all: webapp
 clean:
 	rm -f webapp
 
-webapp: $(SRC)/main.cc
+webapp: $(SRC)/main.cc MyWebAppServer.cc 
 	g++ -o $@ $^ -lmy_http -lmymuduo
 
 .PHONY: all clean
