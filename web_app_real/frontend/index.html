@@ -220,7 +220,8 @@
                 })
                 .then(data => {
                     if (data && data.userId) {
-                        sessionStorage.setItem('userId', data.userId);
+                        // 暂时不实现 session manager
+                        // sessionStorage.setItem('userId', data.userId);
                         showAlert('登录成功！');
                         // 使用重定向而不是fetch
                         window.location.href = '/menu';

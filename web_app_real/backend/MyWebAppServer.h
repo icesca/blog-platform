@@ -61,6 +61,9 @@ private:
     void indexCallback(const HttpRequest &req, HttpResponse *resp);
     void testCallback(const HttpRequest &req, HttpResponse *resp);
     void faviconCallback(const HttpRequest &req, HttpResponse *resp);
+    void loginCallback(const HttpRequest &req, HttpResponse *resp);
+
+    int queryUserId(const std::string &username, const std::string &password);
 
 private:
     HttpServer server_;

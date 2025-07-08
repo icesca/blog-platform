@@ -1,4 +1,6 @@
 #include "MyWebAppServer.h"
+#include <my_http/ConnectionPool.h>
+#include <my_http/Json
 
 const static char favicon[555] = {
     '\x89',
@@ -565,6 +567,7 @@ void MyWebAppServer::initRouter()
     server_.Get(std::string("/"), std::bind(&MyWebAppServer::indexCallback, this, std::placeholders::_1, std::placeholders::_2));
     server_.Get(std::string("/test"), std::bind(&MyWebAppServer::testCallback, this, std::placeholders::_1, std::placeholders::_2));
     server_.Get(std::string("/favicon.ico"), std::bind(&MyWebAppServer::faviconCallback, this, std::placeholders::_1, std::placeholders::_2));
+    server_.Get(std::string("/login"), std::bind(&MyWebAppServer::loginCallback, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 void MyWebAppServer::indexCallback(const HttpRequest &req, HttpResponse *resp)
@@ -621,3 +624,48 @@ void MyWebAppServer::faviconCallback(const HttpRequest &req, HttpResponse *resp)
     resp->setBody(std::string(favicon, sizeof favicon));
     resp->setContentLength(sizeof favicon);
 }
+
+void MyWebAppServer::loginCallback(const HttpRequest &req, HttpResponse *resp)
+{
+    // 处理 login, 那么就必然要先从 request body 中获取账号密码
+    std::string content_type = req.getHeader("Content-Type");
+    std::string body = req.getBody();
+
+    if (content_type.empty() || content_type != "application/json" || body.empty())
+    {
+        LOG_INFO("get content:\n%s", body);
+        resp->setStatusLine(req.getVersionStr(), HttpResponse::k400BadRequest, "Bad Request");
+        resp->setCloseConnection(true);
+        resp->setContentType("application/json");
+        resp->setContentLength(0);
+        resp->setBody("");
+        return;
+    }
+
+    try
+    {
+        json parsed = json::parse
+    }
+    catch()
+}
+
+    int MyWebAppServer::queryUserId(const std::string &username, const std::string &password)
+    {
+        // 前端用户传来账号密码，查找数据库是否有该账号密码
+        // 使用预处理语句, 防止sql注入
+        // TODO: 如何防止 SQL 注入
+        std::shared_ptr<Connection> conn_sp = ConnectionPool::getConnectionPool()->getConnection();
+        std::string query_str = "SELECT id FROM users WHERE username = " + username + "AND password = " + password;
+        MySQLResult *res = conn_sp->query(query_str);
+        if (!res)
+        {
+            LOG_ERROR("MySQL query error\n");
+        }
+        else
+        {
+            if (res->getRowCount() == 0)
+                return -1;
+            else
+                return std::stoi(res->getValue(1, "id"));
+        }
+    }
