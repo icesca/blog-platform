@@ -566,7 +566,6 @@ void MyWebAppServer::initRouter()
     // Q: why this doesn't work
     // server_.Get(std::string("/"), std::bind(MyWebAppServer::entryCallback, this, std::placeholders::_1, std::placeholders::_2));
 
-    server_.Get(std::string("/"), std::bind(&MyWebAppServer::indexCallback, this, std::placeholders::_1, std::placeholders::_2));
     server_.Get(std::string("/test"), std::bind(&MyWebAppServer::testCallback, this, std::placeholders::_1, std::placeholders::_2));
     server_.Get(std::string("/favicon.ico"), std::bind(&MyWebAppServer::faviconCallback, this, std::placeholders::_1, std::placeholders::_2));
 
@@ -1002,7 +1001,7 @@ void MyWebAppServer::logoutCallback(const HttpRequest &req, HttpResponse *resp)
 
         json response;
         response["status"] = "success";
-        response["message"] = "logout successful";
+        response["message"] = "logout success";
         std::string responseBody = response.dump(4);
 
         resp->setStatusLine(req.getVersionStr(), HttpResponse::k200Ok, "OK");

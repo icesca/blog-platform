@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
   }
 
   EventLoop loop;
-  MyWebAppServer server(&loop, InetAddress(50001), std::string("dummy"));
+  MyWebAppServer server(&loop, InetAddress(50001, "0.0.0.0"), std::string("dummy"));
   server.setThreadNum(numThreads);
 
   server.start();

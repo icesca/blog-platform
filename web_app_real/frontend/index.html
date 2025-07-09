@@ -4,267 +4,435 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>五子棋</title>
+    <title>Web Application</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        * {
             margin: 0;
-            background: #f0f0f0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        h1.title {
-            font-size: 36px;
-            font-weight: bold;
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-            background: linear-gradient(to right, #008BFF, #00BFFF);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
 
         .container {
-            width: 350px;
-            padding: 20px;
-            background: #ffffff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            text-align: left;
-            box-sizing: border-box;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
         }
 
-        h2 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            text-align: center;
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        h1 {
             color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 600;
         }
 
         .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
             margin-bottom: 15px;
         }
 
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            color: #555;
-            margin-bottom: 5px;
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
         }
 
-        .form-group input {
-            width: calc(100% - 20px);
-            padding: 10px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
+        button:active {
+            transform: translateY(0);
         }
 
-        .btn {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+        .logout-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            margin-bottom: 30px;
         }
 
-        .btn:hover {
-            background-color: #0056b3;
+        .logout-btn:hover {
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
         }
 
-        .switch {
-            margin-top: 15px;
-            font-size: 14px;
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
             text-align: center;
-            color: #555;
         }
 
-        .switch a {
-            color: #007BFF;
-            text-decoration: none;
-            cursor: pointer;
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
 
-        .switch a:hover {
-            text-decoration: underline;
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
 
-        #register-container {
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 1px solid #e9ecef;
+        }
+
+        .section h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .userdata-display {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            color: #495057;
+        }
+
+        .hidden {
             display: none;
         }
 
-        /* 登录/注册成功蓝色提示框 */
-        #success-alert {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #007BFF;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            display: none;
-            z-index: 1000;
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .user-info {
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #155724;
+            font-weight: 500;
         }
     </style>
 </head>
 
 <body>
-    <div id="success-alert">提示信息</div>
+    <div class="container">
+        <h1>Web Application</h1>
 
-    <!-- 精美标题 -->
-    <h1 class="title">五子棋</h1>
+        <div id="messageContainer"></div>
 
-    <!-- 登录界面 -->
-    <div class="container" id="login-container">
-        <h2>登录</h2>
-        <form id="login-form">
-            <div class="form-group">
-                <label for="login-username">用户名</label>
-                <input type="text" id="login-username" placeholder="请输入用户名" required>
+        <!-- Login Form -->
+        <div id="loginSection">
+            <div class="section">
+                <h2>Login</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit">Login</button>
+                </form>
             </div>
-            <div class="form-group">
-                <label for="login-password">密码</label>
-                <input type="password" id="login-password" placeholder="请输入密码" required>
-            </div>
-            <button type="submit" class="btn">登录</button>
-        </form>
-        <div class="switch">
-            没有账号？<a onclick="showRegister()">去注册账号</a>
         </div>
-    </div>
 
-    <!-- 注册界面 -->
-    <div class="container" id="register-container">
-        <h2>注册</h2>
-        <form id="register-form">
-            <div class="form-group">
-                <label for="register-username">用户名</label>
-                <input type="text" id="register-username" placeholder="请输入用户名" required>
+        <!-- Logged In Section -->
+        <div id="loggedInSection" class="hidden">
+            <div class="user-info">
+                <span id="userInfo">Welcome!</span>
             </div>
-            <div class="form-group">
-                <label for="register-password">密码</label>
-                <input type="password" id="register-password" placeholder="请输入密码" required>
+
+            <button id="logoutBtn" class="logout-btn">Logout</button>
+
+            <!-- Post Data Section -->
+            <div class="section">
+                <h2>Post User Data</h2>
+                <form id="postDataForm">
+                    <div class="form-group">
+                        <label for="userdata">User Data:</label>
+                        <textarea id="userdata" name="userdata" placeholder="Enter your data here..."
+                            required></textarea>
+                    </div>
+                    <button type="submit">Post Data</button>
+                </form>
             </div>
-            <button type="submit" class="btn">注册</button>
-        </form>
-        <div class="switch">
-            已有账号？<a onclick="showLogin()">返回登录</a>
+
+            <!-- Get Data Section -->
+            <div class="section">
+                <h2>Retrieve User Data</h2>
+                <button id="getUserDataBtn">Get User Data</button>
+                <div id="userdataDisplay" class="userdata-display hidden"></div>
+            </div>
         </div>
     </div>
 
     <script>
-        // 显示蓝色提示框
-        function showAlert(message) {
-            const alertBox = document.getElementById('success-alert');
-            alertBox.textContent = message;
-            alertBox.style.display = 'block';
+        // Global state
+        let isLoggedIn = false;
+        let currentUserId = null;
+
+        // DOM elements
+        const loginSection = document.getElementById('loginSection');
+        const loggedInSection = document.getElementById('loggedInSection');
+        const messageContainer = document.getElementById('messageContainer');
+        const loginForm = document.getElementById('loginForm');
+        const postDataForm = document.getElementById('postDataForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const getUserDataBtn = document.getElementById('getUserDataBtn');
+        const userdataDisplay = document.getElementById('userdataDisplay');
+        const userInfo = document.getElementById('userInfo');
+
+        // Utility functions
+        function showMessage(message, type = 'success') {
+            messageContainer.innerHTML = `<div class="message ${type}">${message}</div>`;
             setTimeout(() => {
-                alertBox.style.display = 'none';
-            }, 1000);
+                messageContainer.innerHTML = '';
+            }, 5000);
         }
 
-        // 切换注册和登录界面
-        function showRegister() {
-            document.getElementById('login-container').style.display = 'none';
-            document.getElementById('register-container').style.display = 'block';
+        function setLoading(element, isLoading) {
+            if (isLoading) {
+                element.classList.add('loading');
+            } else {
+                element.classList.remove('loading');
+            }
         }
 
-        function showLogin() {
-            document.getElementById('register-container').style.display = 'none';
-            document.getElementById('login-container').style.display = 'block';
+        function showLoginSection() {
+            loginSection.classList.remove('hidden');
+            loggedInSection.classList.add('hidden');
+            isLoggedIn = false;
+            currentUserId = null;
         }
 
-        // 登录表单提交
-        document.getElementById('login-form').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const username = document.getElementById('login-username').value;
-            const password = document.getElementById('login-password').value;
+        function showLoggedInSection(userId) {
+            loginSection.classList.add('hidden');
+            loggedInSection.classList.remove('hidden');
+            isLoggedIn = true;
+            currentUserId = userId;
+            userInfo.textContent = `Welcome! User ID: ${userId}`;
+            userdataDisplay.classList.add('hidden');
+        }
 
-            fetch('/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            })
-                .then(response => {
-                    // 先检查响应状态
-                    if (response.status === 403) {
-                        showAlert('账号已在其他地方登录！');
-                        throw new Error('已在其他地方登录');
-                    }
-
-                    // 检查其他状态和内容类型
-                    const contentType = response.headers.get('content-type');
-                    if (response.status === 200) {
-                        if (contentType && contentType.includes('application/json')) {
-                            return response.json();
-                        } else {
-                            throw new Error('返回格式错误');
-                        }
-                    } else if (response.status === 401) {
-                        showAlert('账号或密码错误！');
-                        throw new Error('认证失败');
-                    } else {
-                        throw new Error('请求失败');
-                    }
-                })
-                .then(data => {
-                    if (data && data.userId) {
-                        // 暂时不实现 session manager
-                        // sessionStorage.setItem('userId', data.userId);
-                        showAlert('登录成功！');
-                        // 使用重定向而不是fetch
-                        window.location.href = '/menu';
-                    } else {
-                        throw new Error('无效的响应数据');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    if (!error.message.includes('已在其他地方登录') &&
-                        !error.message.includes('认证失败')) {
-                        showAlert('操作失败，请重试');
-                    }
+        // API functions
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    credentials: 'include', // Include cookies
+                    ...options
                 });
-        });
 
-        // 注册表单提交
-        document.getElementById('register-form').addEventListener('submit', function (e) {
+                const data = await response.json();
+                return { response, data };
+            } catch (error) {
+                throw new Error('Network error: ' + error.message);
+            }
+        }
+
+        // Login handler
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const username = document.getElementById('register-username').value;
-            const password = document.getElementById('register-password').value;
 
-            fetch('/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            })
-                .then(response => {
-                    if (response.status === 200) {
-                        showAlert('注册成功！');
+            const formData = new FormData(loginForm);
+            const username = formData.get('username');
+            const password = formData.get('password');
 
-                        // 将注册的用户名和密码填充到登录输入框
-                        document.getElementById('login-username').value = username;
-                        document.getElementById('login-password').value = password;
+            setLoading(loginForm, true);
 
-                        setTimeout(showLogin, 1000); // 1秒后回到登录界面
-                    } else if (response.status === 409) {
-                        alert('用户名已被注册，请重新输入！');
-                    }
-                })
-                .catch(error => console.error('注册错误:', error));
+            try {
+                const { response, data } = await makeRequest('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.status === 200) {
+                    showMessage('Login successful!', 'success');
+                    showLoggedInSection(data.userId);
+                    loginForm.reset();
+                } else if (response.status === 400) {
+                    showMessage('Invalid request format', 'error');
+                } else if (response.status === 401) {
+                    showMessage('Invalid username or password', 'error');
+                } else if (response.status === 403) {
+                    showMessage('User already logged in', 'error');
+                } else {
+                    showMessage('Login failed', 'error');
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            } finally {
+                setLoading(loginForm, false);
+            }
         });
 
+        // Logout handler
+        logoutBtn.addEventListener('click', async () => {
+            setLoading(logoutBtn, true);
+
+            try {
+                const { response, data } = await makeRequest('/logout', {
+                    method: 'GET'
+                });
+
+                if (response.status === 200) {
+                    showMessage('Logout successful!', 'success');
+                    showLoginSection();
+                } else if (response.status === 403) {
+                    showMessage('Not logged in', 'error');
+                    showLoginSection();
+                } else {
+                    showMessage('Logout failed', 'error');
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            } finally {
+                setLoading(logoutBtn, false);
+            }
+        });
+
+        // Post data handler
+        postDataForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(postDataForm);
+            const userdata = formData.get('userdata');
+
+            setLoading(postDataForm, true);
+
+            try {
+                const { response, data } = await makeRequest('/postdata', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userdata })
+                });
+
+                if (response.status === 200) {
+                    showMessage('Data posted successfully!', 'success');
+                    postDataForm.reset();
+                } else if (response.status === 400) {
+                    showMessage('Invalid request format', 'error');
+                } else if (response.status === 403) {
+                    showMessage('Not logged in', 'error');
+                    showLoginSection();
+                } else {
+                    showMessage('Failed to post data', 'error');
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            } finally {
+                setLoading(postDataForm, false);
+            }
+        });
+
+        // Get user data handler
+        getUserDataBtn.addEventListener('click', async () => {
+            setLoading(getUserDataBtn, true);
+
+            try {
+                const { response, data } = await makeRequest('/userdata', {
+                    method: 'GET'
+                });
+
+                if (response.status === 200) {
+                    showMessage('Data retrieved successfully!', 'success');
+                    userdataDisplay.textContent = data.userdata || 'No data available';
+                    userdataDisplay.classList.remove('hidden');
+                } else if (response.status === 403) {
+                    showMessage('Not logged in', 'error');
+                    showLoginSection();
+                } else {
+                    showMessage('Failed to retrieve data', 'error');
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            } finally {
+                setLoading(getUserDataBtn, false);
+            }
+        });
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            showLoginSection();
+        });
     </script>
 </body>
 
