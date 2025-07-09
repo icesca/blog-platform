@@ -1,438 +1,474 @@
 <!DOCTYPE html>
+<!-- from DeepSeek -->
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Application</title>
+    <title>Simple Web App</title>
     <style>
+        /* Base Styles */
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --text-color: #333;
+            --light-gray: #f5f5f5;
+            --border-radius: 4px;
+            --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--light-gray);
             padding: 20px;
         }
 
         .container {
+            max-width: 800px;
+            margin: 0 auto;
             background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-            width: 100%;
-            position: relative;
-            overflow: hidden;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
         }
 
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
+        h1,
+        h2,
+        h3 {
+            margin-bottom: 20px;
+            color: var(--primary-color);
         }
 
-        h1 {
-            color: #333;
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
             margin-bottom: 30px;
-            text-align: center;
-            font-size: 2rem;
-            font-weight: 600;
         }
 
+        /* Navigation Styles */
+        nav {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-logout {
+            background: var(--error-color);
+        }
+
+        .btn-logout:hover {
+            background: #c0392b;
+        }
+
+        /* Form Styles */
         .form-group {
             margin-bottom: 20px;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: 500;
+            margin-bottom: 5px;
+            font-weight: bold;
         }
 
-        input[type="text"],
-        input[type="password"],
+        input,
         textarea {
             width: 100%;
-            padding: 15px;
-            border: 2px solid #e1e5e9;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
-        }
-
-        input[type="text"]:focus,
-        input[type="password"]:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
         }
 
         textarea {
-            resize: vertical;
             min-height: 100px;
+            resize: vertical;
         }
 
-        button {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 15px;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .logout-btn {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            margin-bottom: 30px;
-        }
-
-        .logout-btn:hover {
-            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
-        }
-
+        /* Message Styles */
         .message {
             padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-weight: 500;
-            text-align: center;
+            margin: 20px 0;
+            border-radius: var(--border-radius);
         }
 
-        .message.success {
-            background: #d4edda;
+        .success {
+            background-color: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
 
-        .message.error {
-            background: #f8d7da;
+        .error {
+            background-color: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
 
-        .section {
-            margin-bottom: 30px;
+        /* Data Display */
+        .user-data {
+            background: var(--light-gray);
             padding: 20px;
-            background: #f8f9fa;
-            border-radius: 15px;
-            border: 1px solid #e9ecef;
-        }
-
-        .section h2 {
-            color: #495057;
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-        }
-
-        .userdata-display {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #dee2e6;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
             white-space: pre-wrap;
-            word-wrap: break-word;
-            font-family: 'Courier New', monospace;
-            color: #495057;
         }
 
-        .hidden {
-            display: none;
-        }
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
 
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
 
-        .user-info {
-            background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            text-align: center;
-            color: #155724;
-            font-weight: 500;
+            nav {
+                flex-wrap: wrap;
+            }
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>Web Application</h1>
+        <header>
+            <h1>Simple Web App</h1>
+            <div id="userInfo"></div>
+        </header>
 
-        <div id="messageContainer"></div>
+        <main id="mainContent">
+            <!-- Content will be dynamically loaded here -->
+        </main>
 
-        <!-- Login Form -->
-        <div id="loginSection">
-            <div class="section">
-                <h2>Login</h2>
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="username">Username:</label>
-                        <input type="text" id="username" name="username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password:</label>
-                        <input type="password" id="password" name="password" required>
-                    </div>
-                    <button type="submit">Login</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Logged In Section -->
-        <div id="loggedInSection" class="hidden">
-            <div class="user-info">
-                <span id="userInfo">Welcome!</span>
-            </div>
-
-            <button id="logoutBtn" class="logout-btn">Logout</button>
-
-            <!-- Post Data Section -->
-            <div class="section">
-                <h2>Post User Data</h2>
-                <form id="postDataForm">
-                    <div class="form-group">
-                        <label for="userdata">User Data:</label>
-                        <textarea id="userdata" name="userdata" placeholder="Enter your data here..."
-                            required></textarea>
-                    </div>
-                    <button type="submit">Post Data</button>
-                </form>
-            </div>
-
-            <!-- Get Data Section -->
-            <div class="section">
-                <h2>Retrieve User Data</h2>
-                <button id="getUserDataBtn">Get User Data</button>
-                <div id="userdataDisplay" class="userdata-display hidden"></div>
-            </div>
-        </div>
+        <div id="messageArea"></div>
     </div>
 
     <script>
-        // Global state
-        let isLoggedIn = false;
-        let currentUserId = null;
-
-        // DOM elements
-        const loginSection = document.getElementById('loginSection');
-        const loggedInSection = document.getElementById('loggedInSection');
-        const messageContainer = document.getElementById('messageContainer');
-        const loginForm = document.getElementById('loginForm');
-        const postDataForm = document.getElementById('postDataForm');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const getUserDataBtn = document.getElementById('getUserDataBtn');
-        const userdataDisplay = document.getElementById('userdataDisplay');
+        // DOM Elements
+        const mainContent = document.getElementById('mainContent');
         const userInfo = document.getElementById('userInfo');
+        const messageArea = document.getElementById('messageArea');
 
-        // Utility functions
-        function showMessage(message, type = 'success') {
-            messageContainer.innerHTML = `<div class="message ${type}">${message}</div>`;
-            setTimeout(() => {
-                messageContainer.innerHTML = '';
-            }, 5000);
+        // Application State
+        let currentUser = null;
+
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkSession();
+            renderContent();
+        });
+
+        // Check if user is logged in
+        async function checkSession() {
+            try {
+                const response = await fetch('/userdata', {
+                    method: 'GET',
+                    credentials: 'include' // Include cookies
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    // Extract username from message
+                    const username = data.message.match(/got userdata of (.+)$/)?.[1];
+                    if (username) {
+                        currentUser = username;
+                    }
+                }
+            } catch (error) {
+                console.error('Session check failed:', error);
+            }
         }
 
-        function setLoading(element, isLoading) {
-            if (isLoading) {
-                element.classList.add('loading');
+        // Render appropriate content based on auth state
+        function renderContent() {
+            if (currentUser) {
+                renderAuthenticatedView();
             } else {
-                element.classList.remove('loading');
+                renderUnauthenticatedView();
             }
         }
 
-        function showLoginSection() {
-            loginSection.classList.remove('hidden');
-            loggedInSection.classList.add('hidden');
-            isLoggedIn = false;
-            currentUserId = null;
+        // Render view for logged-in users
+        function renderAuthenticatedView() {
+            userInfo.innerHTML = `<p>Welcome, <strong>${currentUser}</strong>!</p>`;
+
+            mainContent.innerHTML = `
+                <section>
+                    <h2>Dashboard</h2>
+                    <nav>
+                        <button class="btn" onclick="loadUserData()">Get User Data</button>
+                        <button class="btn" onclick="showPostDataForm()">Post Data</button>
+                        <button class="btn btn-logout" onclick="logout()">Logout</button>
+                    </nav>
+                </section>
+                <section id="contentSection">
+                    <!-- Dynamic content will load here -->
+                </section>
+            `;
         }
 
-        function showLoggedInSection(userId) {
-            loginSection.classList.add('hidden');
-            loggedInSection.classList.remove('hidden');
-            isLoggedIn = true;
-            currentUserId = userId;
-            userInfo.textContent = `Welcome! User ID: ${userId}`;
-            userdataDisplay.classList.add('hidden');
+        // Render view for guests
+        function renderUnauthenticatedView() {
+            userInfo.innerHTML = '';
+            mainContent.innerHTML = `
+                <section>
+                    <h2>Welcome, Guest</h2>
+                    <p>Please log in or register to continue.</p>
+                    <nav>
+                        <button class="btn" onclick="showLoginForm()">Login</button>
+                        <button class="btn" onclick="showRegisterForm()">Register</button>
+                    </nav>
+                </section>
+                <section id="contentSection">
+                    <!-- Forms will load here -->
+                </section>
+            `;
         }
 
-        // API functions
-        async function makeRequest(url, options = {}) {
+        // Show login form
+        function showLoginForm() {
+            document.getElementById('contentSection').innerHTML = `
+                <div class="form-container">
+                    <h3>Login</h3>
+                    <form id="loginForm" onsubmit="login(event)">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" required>
+                        </div>
+                        <button type="submit" class="btn">Login</button>
+                    </form>
+                </div>
+            `;
+        }
+
+        // Show registration form
+        function showRegisterForm() {
+            document.getElementById('contentSection').innerHTML = `
+                <div class="form-container">
+                    <h3>Register</h3>
+                    <form id="registerForm" onsubmit="register(event)">
+                        <div class="form-group">
+                            <label for="regUsername">Username</label>
+                            <input type="text" id="regUsername" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="regPassword">Password</label>
+                            <input type="password" id="regPassword" required>
+                        </div>
+                        <button type="submit" class="btn">Register</button>
+                    </form>
+                </div>
+            `;
+        }
+
+        // Show post data form
+        function showPostDataForm() {
+            document.getElementById('contentSection').innerHTML = `
+                <div class="form-container">
+                    <h3>Post Data</h3>
+                    <form id="postDataForm" onsubmit="postData(event)">
+                        <div class="form-group">
+                            <label for="userdata">Your Data</label>
+                            <textarea id="userdata" required></textarea>
+                        </div>
+                        <button type="submit" class="btn">Submit</button>
+                    </form>
+                </div>
+            `;
+        }
+
+        // Handle login
+        async function login(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
             try {
-                const response = await fetch(url, {
-                    credentials: 'include', // Include cookies
-                    ...options
-                });
-
-                const data = await response.json();
-                return { response, data };
-            } catch (error) {
-                throw new Error('Network error: ' + error.message);
-            }
-        }
-
-        // Login handler
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const formData = new FormData(loginForm);
-            const username = formData.get('username');
-            const password = formData.get('password');
-
-            setLoading(loginForm, true);
-
-            try {
-                const { response, data } = await makeRequest('/login', {
+                const response = await fetch('/login', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
+                    credentials: 'include'
                 });
 
-                if (response.status === 200) {
+                if (response.ok) {
+                    currentUser = username;
                     showMessage('Login successful!', 'success');
-                    showLoggedInSection(data.userId);
-                    loginForm.reset();
-                } else if (response.status === 400) {
-                    showMessage('Invalid request format', 'error');
-                } else if (response.status === 401) {
-                    showMessage('Invalid username or password', 'error');
-                } else if (response.status === 403) {
-                    showMessage('User already logged in', 'error');
+                    renderContent();
                 } else {
-                    showMessage('Login failed', 'error');
+                    handleErrorResponse(response, 'Login failed');
                 }
             } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
-            } finally {
-                setLoading(loginForm, false);
+                showMessage('Network error: ' + error.message, 'error');
             }
-        });
+        }
 
-        // Logout handler
-        logoutBtn.addEventListener('click', async () => {
-            setLoading(logoutBtn, true);
+        // Handle registration
+        async function register(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
 
             try {
-                const { response, data } = await makeRequest('/logout', {
-                    method: 'GET'
-                });
-
-                if (response.status === 200) {
-                    showMessage('Logout successful!', 'success');
-                    showLoginSection();
-                } else if (response.status === 403) {
-                    showMessage('Not logged in', 'error');
-                    showLoginSection();
-                } else {
-                    showMessage('Logout failed', 'error');
-                }
-            } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
-            } finally {
-                setLoading(logoutBtn, false);
-            }
-        });
-
-        // Post data handler
-        postDataForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const formData = new FormData(postDataForm);
-            const userdata = formData.get('userdata');
-
-            setLoading(postDataForm, true);
-
-            try {
-                const { response, data } = await makeRequest('/postdata', {
+                const response = await fetch('/register', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ userdata })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
+                    credentials: 'include'
                 });
 
-                if (response.status === 200) {
-                    showMessage('Data posted successfully!', 'success');
-                    postDataForm.reset();
-                } else if (response.status === 400) {
-                    showMessage('Invalid request format', 'error');
-                } else if (response.status === 403) {
-                    showMessage('Not logged in', 'error');
-                    showLoginSection();
+                if (response.ok) {
+                    showMessage('Registration successful! Please log in.', 'success');
+                    showLoginForm();
                 } else {
-                    showMessage('Failed to post data', 'error');
+                    handleErrorResponse(response, 'Registration failed');
                 }
             } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
-            } finally {
-                setLoading(postDataForm, false);
+                showMessage('Network error: ' + error.message, 'error');
             }
-        });
+        }
 
-        // Get user data handler
-        getUserDataBtn.addEventListener('click', async () => {
-            setLoading(getUserDataBtn, true);
+        // Handle logout
+        async function logout() {
+            try {
+                const response = await fetch('/logout', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    currentUser = null;
+                    showMessage('Logout successful', 'success');
+                    renderContent();
+                } else {
+                    handleErrorResponse(response, 'Logout failed');
+                }
+            } catch (error) {
+                showMessage('Network error: ' + error.message, 'error');
+            }
+        }
+
+        // Load user data
+        async function loadUserData() {
+            try {
+                const response = await fetch('/userdata', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('contentSection').innerHTML = `
+                        <div class="user-data-container">
+                            <h3>Your Data</h3>
+                            <div class="user-data">${data.userdata || 'No data available'}</div>
+                        </div>
+                    `;
+                } else {
+                    handleErrorResponse(response, 'Failed to load user data');
+                }
+            } catch (error) {
+                showMessage('Network error: ' + error.message, 'error');
+            }
+        }
+
+        // Post user data
+        async function postData(event) {
+            event.preventDefault();
+
+            const userdata = document.getElementById('userdata').value;
 
             try {
-                const { response, data } = await makeRequest('/userdata', {
-                    method: 'GET'
+                const response = await fetch('/postdata', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userdata }),
+                    credentials: 'include'
                 });
 
-                if (response.status === 200) {
-                    showMessage('Data retrieved successfully!', 'success');
-                    userdataDisplay.textContent = data.userdata || 'No data available';
-                    userdataDisplay.classList.remove('hidden');
-                } else if (response.status === 403) {
-                    showMessage('Not logged in', 'error');
-                    showLoginSection();
+                if (response.ok) {
+                    showMessage('Data posted successfully!', 'success');
+                    document.getElementById('userdata').value = '';
                 } else {
-                    showMessage('Failed to retrieve data', 'error');
+                    handleErrorResponse(response, 'Failed to post data');
                 }
             } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
-            } finally {
-                setLoading(getUserDataBtn, false);
+                showMessage('Network error: ' + error.message, 'error');
             }
-        });
+        }
 
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', () => {
-            showLoginSection();
-        });
+        // Handle error responses
+        async function handleErrorResponse(response, defaultMessage) {
+            if (response.status === 400) {
+                showMessage('Bad request: Invalid input format', 'error');
+            } else if (response.status === 401) {
+                showMessage('Unauthorized: Invalid credentials', 'error');
+            } else if (response.status === 403) {
+                try {
+                    const data = await response.json();
+                    showMessage(`Forbidden: ${data.message || 'Operation not allowed'}`, 'error');
+                } catch {
+                    showMessage('Forbidden: Operation not allowed', 'error');
+                }
+            } else {
+                showMessage(`${defaultMessage}: Status ${response.status}`, 'error');
+            }
+        }
+
+        // Show message to user
+        function showMessage(message, type = 'info') {
+            messageArea.innerHTML = `
+                <div class="message ${type}">
+                    ${message}
+                </div>
+            `;
+
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageArea.innerHTML = '';
+                }, 5000);
+            }
+        }
     </script>
 </body>
 

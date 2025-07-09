@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<!-- from ChatGPT -->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Web App</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .links a,
+        button {
+            display: block;
+            margin: 1rem 0;
+            text-decoration: none;
+            color: #3366cc;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            text-align: left;
+        }
+
+        .form-section {
+            margin-top: 1rem;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>My Web App</h1>
+        <div id="content">Loading...</div>
+    </div>
+    <script>
+        let sessionUser = null;
+
+        async function fetchUserdata() {
+            try {
+                const res = await fetch('/userdata', {
+                    method: 'GET',
+                    credentials: 'include',
+                });
+                if (res.status === 200) {
+                    const data = await res.json();
+                    return {
+                        username: data.message.match(/got userdata of (.*)/)[1],
+                        userdata: data.userdata
+                    };
+                } else {
+                    throw new Error('Not logged in');
+                }
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function loginUser(username, password) {
+            const res = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ username, password })
+            });
+            return res;
+        }
+
+        async function registerUser(username, password) {
+            const res = await fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            return res;
+        }
+
+        async function postUserData(userdata) {
+            const res = await fetch('/postdata', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ userdata })
+            });
+            return res;
+        }
+
+        async function logoutUser() {
+            await fetch('/logout', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            renderContent();
+        }
+
+        function showLoginForm() {
+            document.getElementById('content').innerHTML = `
+        <div class="form-section">
+          <h2>Login</h2>
+          <input type="text" id="login-username" placeholder="Username" />
+          <input type="password" id="login-password" placeholder="Password" />
+          <button onclick="handleLogin()">Submit</button>
+          <button onclick="renderContent()">Back</button>
+          <div id="login-error" class="error"></div>
+        </div>
+      `;
+        }
+
+        async function handleLogin() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const res = await loginUser(username, password);
+            if (res.status === 200) {
+                renderContent();
+            } else {
+                document.getElementById('login-error').textContent = `Login failed: ${res.status}`;
+            }
+        }
+
+        function showRegisterForm() {
+            document.getElementById('content').innerHTML = `
+        <div class="form-section">
+          <h2>Register</h2>
+          <input type="text" id="reg-username" placeholder="Username" />
+          <input type="password" id="reg-password" placeholder="Password" />
+          <button onclick="handleRegister()">Submit</button>
+          <button onclick="renderContent()">Back</button>
+          <div id="register-error" class="error"></div>
+        </div>
+      `;
+        }
+
+        async function handleRegister() {
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
+            const res = await registerUser(username, password);
+            if (res.status === 200) {
+                renderContent();
+            } else {
+                document.getElementById('register-error').textContent = `Registration failed: ${res.status}`;
+            }
+        }
+
+        function showPostDataForm() {
+            document.getElementById('content').innerHTML = `
+        <div class="form-section">
+          <h2>Post User Data</h2>
+          <textarea id="post-userdata" placeholder="Enter your data..."></textarea>
+          <button onclick="handlePostData()">Submit</button>
+          <button onclick="renderContent()">Back</button>
+          <div id="postdata-status"></div>
+        </div>
+      `;
+        }
+
+        async function handlePostData() {
+            const data = document.getElementById('post-userdata').value;
+            const res = await postUserData(data);
+            const msg = document.getElementById('postdata-status');
+            if (res.status === 200) {
+                msg.textContent = 'Post successful';
+                msg.className = 'success';
+            } else {
+                msg.textContent = `Failed to post data: ${res.status}`;
+                msg.className = 'error';
+            }
+        }
+
+        async function renderContent() {
+            const user = await fetchUserdata();
+            sessionUser = user;
+            const contentDiv = document.getElementById('content');
+            if (user) {
+                contentDiv.innerHTML = `
+          <p>Logged in as <strong>${user.username}</strong></p>
+          <div class="links">
+            <button onclick="alert('User Data: ' + sessionUser.userdata)">View User Data</button>
+            <button onclick="showPostDataForm()">Post User Data</button>
+            <button onclick="logoutUser()">Logout</button>
+          </div>
+        `;
+            } else {
+                contentDiv.innerHTML = `
+          <div class="links">
+            <button onclick="showLoginForm()">Login</button>
+            <button onclick="showRegisterForm()">Register</button>
+          </div>
+        `;
+            }
+        }
+
+        renderContent();
+    </script>
+</body>
+
+</html>

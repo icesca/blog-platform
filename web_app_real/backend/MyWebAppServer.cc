@@ -571,6 +571,7 @@ void MyWebAppServer::initRouter()
 
     server_.Get(std::string("/"), std::bind(&MyWebAppServer::indexCallback, this, std::placeholders::_1, std::placeholders::_2));
     server_.Post(std::string("/login"), std::bind(&MyWebAppServer::loginCallback, this, std::placeholders::_1, std::placeholders::_2));
+    server_.Post(std::string("/register"), std::bind(&MyWebAppServer::registerCallback, this, std::placeholders::_1, std::placeholders::_2));
     server_.Get(std::string("/logout"), std::bind(&MyWebAppServer::logoutCallback, this, std::placeholders::_1, std::placeholders::_2));
     server_.Get(std::string("/userdata"), std::bind(&MyWebAppServer::userdataCallback, this, std::placeholders::_1, std::placeholders::_2));
     server_.Post(std::string("/postdata"), std::bind(&MyWebAppServer::postdataCallback, this, std::placeholders::_1, std::placeholders::_2));
@@ -960,6 +961,103 @@ void MyWebAppServer::loginCallback(const HttpRequest &req, HttpResponse *resp)
     }
 }
 
+void MyWebAppServer::registerCallback(const HttpRequest &req, HttpResponse *resp)
+{
+    /*
+    # 可能的回应：
+    400 Bad Request
+      格式错误
+    403 Forbidden
+      用户名或密码不合法（已有相同的用户名或用户名密码超长）
+    200 OK
+      注册成功
+    */
+
+    // 1. 检查 400 Bad Request 错误
+    std::string content_type = req.getHeader("Content-Type");
+    std::string body = req.getBody();
+
+    // body.empty() 的问题在 HttpContext::parseRequest() 中已经反馈了
+    if (content_type.empty() || content_type != "application/json" || body.empty())
+    {
+        LOG_INFO("get content:\n%s", body.c_str());
+
+        json failureResp;
+        failureResp["status"] = "error";
+        failureResp["message"] = "格式错误";
+        std::string failureBody = failureResp.dump(4);
+
+        resp->setStatusLine(req.getVersionStr(), HttpResponse::k400BadRequest, "(TEST) Bad Request");
+        resp->setCloseConnection(true);
+        resp->setContentType("application/json");
+        resp->setContentLength(failureBody.size());
+        resp->setBody(failureBody);
+        return;
+    }
+
+    try
+    {
+        json parsed = json::parse(req.getBody());
+        std::string username = parsed["username"];
+        std::string password = parsed["password"];
+
+        // # 2. 检查 403 Forbidden 错误
+        int userId = checkUserExists(username);
+
+        if (userId != -1)
+        {
+            // 封装json数据
+            json failureResp;
+            failureResp["status"] = "error";
+            failureResp["message"] = "用户名已存在，或用户名密码超长";
+            std::string failureBody = failureResp.dump(4);
+
+            resp->setStatusLine(req.getVersionStr(), HttpResponse::k403Forbidden, "Forbidden");
+            resp->setCloseConnection(true);
+            resp->setContentType("application/json");
+            resp->setContentLength(failureBody.size());
+            resp->setBody(failureBody);
+            return;
+        }
+
+        // # 3. 执行到这里，才终于 200 OK
+        // getSession(req, resp) 的接口就像一个中间件一样
+        // auto session = session_manager_->getSession(req, resp);
+
+        // 真正重要的业务逻辑就这些
+        int res_id = registerUser(username, password);
+        ///
+
+        json successResp;
+        successResp["status"] = "success";
+        successResp["userId"] = res_id;
+        std::string successBody = successResp.dump(4);
+
+        resp->setStatusLine(req.getVersionStr(), HttpResponse::k200Ok, "OK");
+        resp->setCloseConnection(false);
+        resp->setContentType("application/json");
+        resp->setContentLength(successBody.size());
+        resp->setBody(successBody);
+        return;
+    }
+    catch (const std::exception &e)
+    {
+        // 捕获异常，返回错误信息
+        // 可能是 json::parse() 失败
+        json failureResp;
+        failureResp["status"] = "error";
+        failureResp["message"] = e.what();
+        std::string failureBody = failureResp.dump(4);
+
+        resp->setStatusLine(req.getVersionStr(), HttpResponse::k400BadRequest, "Bad Request");
+        resp->setCloseConnection(true);
+        resp->setContentType("application/json");
+        resp->setContentLength(failureBody.size());
+        resp->setBody(failureBody);
+        return;
+    }
+}
+
 void MyWebAppServer::logoutCallback(const HttpRequest &req, HttpResponse *resp)
 {
     /*
@@ -1080,4 +1178,42 @@ bool MyWebAppServer::postUserData(const std::string &username, const std::string
     std::string query_str = "UPDATE users SET userdata = \"" + userdata + "\" WHERE username = \"" + username + "\"";
     auto res = conn_sp->update(query_str);
     return res;
+}
+
+int MyWebAppServer::checkUserExists(const std::string &username)
+{
+    std::shared_ptr<Connection> conn_sp = ConnectionPool::getConnectionPool()->getConnection();
+    std::string query_str = "SELECT id FROM users WHERE username = \"" + username + "\"";
+    MySQLResult *res = conn_sp->query(query_str);
+    if (!res)
+    {
+        LOG_ERROR("MySQL query error\n");
+        return -1;
+    }
+    else
+    {
+        if (res->getRowCount() == 0)
+            return -1;
+        else
+            return std::stoi(res->getValue(0, "id"));
+    }
+}
+
+int MyWebAppServer::registerUser(const std::string &username, const std::string &password)
+{
+    std::shared_ptr<Connection> conn_sp = ConnectionPool::getConnectionPool()->getConnection();
+    std::string query_str = "INSERT INTO users (username, password) VALUES (\"" + username + "\", \"" + password + "\")";
+    auto res = conn_sp->update(query_str);
+    if (!res)
+    {
+        LOG_ERROR("MySQL update error\n");
+        throw std::runtime_error("Failed to register user");
+    }
+    else
+    {
+        LOG_INFO("User %s registered successfully", username.c_str());
+    }
+
+    int id = checkUserExists(username);
+    return id;
 }

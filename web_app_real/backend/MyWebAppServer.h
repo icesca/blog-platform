@@ -73,13 +73,17 @@ private:
     // # 需要会话管理的路径：
     void indexCallback(const HttpRequest &req, HttpResponse *resp);
     void loginCallback(const HttpRequest &req, HttpResponse *resp);
+    void registerCallback(const HttpRequest &req, HttpResponse *resp);
     void postdataCallback(const HttpRequest &req, HttpResponse *resp);
     void userdataCallback(const HttpRequest &req, HttpResponse *resp);
     void logoutCallback(const HttpRequest &req, HttpResponse *resp);
 
+private:
     int queryUserId(const std::string &username, const std::string &password);
     std::string queryUserData(const std::string &username);
     bool postUserData(const std::string &username, const std::string &userdata);
+    int checkUserExists(const std::string &username);
+    int registerUser(const std::string &username, const std::string &password);
 
 private:
     HttpServer server_;
