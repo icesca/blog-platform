@@ -10,6 +10,6 @@ clean:
 	rm -f webapp
 
 webapp: $(SRC)/main.cc MyWebAppServer.cc 
-	g++ -o $@ $^ -lmy_http -lmymuduo
+	g++ -o $@ $^ -lmy_http -lmymuduo -lmysqlclient -g
 
 .PHONY: all clean
