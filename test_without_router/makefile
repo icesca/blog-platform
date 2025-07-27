@@ -7,9 +7,12 @@ SRC = .
 
 all: webapp
 clean:
-	rm -f webapp
+	rm -f webapp static
 
 webapp: $(SRC)/main.cc
 	g++ -o $@ $^ -lmy_http -lmymuduo
+
+static: $(SRC)/main.cc
+	g++ -o $@ $^ -Wl,-Bstatic -lmy_http -Wl,-Bstatic -lmymuduo -Wl,-Bdynamic -lmysqlclient
 
 .PHONY: all clean

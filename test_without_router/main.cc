@@ -43,11 +43,14 @@ void onRequest(const HttpRequest &req, HttpResponse *resp)
   }
   else if (req.path() == "/hello")
   {
-    resp->setStatusCode(HttpResponse::k200Ok);
-    resp->setStatusMessage("OK");
+  //  resp->setStatusCode(HttpResponse::k200Ok);
+  //  resp->setStatusMessage("OK");
+	resp->setStatusLine(req.getVersionStr(), HttpResponse::k200Ok, "OK");
     resp->setContentType("text/plain");
     resp->addHeader("Server", "Muduo");
-    resp->setBody("hello, world!\n");
+	std::string body = "hello, world!\n";
+    resp->setBody(body);
+	resp->setContentLength(body.size());
   }
   else
   {
@@ -59,7 +62,7 @@ void onRequest(const HttpRequest &req, HttpResponse *resp)
 
 int main(int argc, char *argv[])
 {
-  int numThreads = 3;
+  int numThreads = 32;
   if (argc > 1)
   {
     benchmark = true;
@@ -67,7 +70,7 @@ int main(int argc, char *argv[])
     numThreads = atoi(argv[1]);
   }
   EventLoop loop;
-  HttpServer server(&loop, InetAddress(50001), "dummy");
+  HttpServer server(&loop, InetAddress(50001, "0.0.0.0"), "dummy");
   // without http router:
   // 需要手动设置 server.setHttpCallback()，不然就被默认设置为了 HttpServer::handleRequest() --> router_.route()
   server.setHttpCallback(onRequest);
