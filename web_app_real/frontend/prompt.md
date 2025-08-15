@@ -1,4 +1,4 @@
-# prompts to Claude:
+# prompts to LLM:
 
 I'm a backend developer and I'm working on a web application. Now I have created several backend callbacks to handle user requests. Can you please provide me with the frontend code for the web application?
 
