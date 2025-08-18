@@ -8,7 +8,7 @@ SRC = .
 all: webapp
 
 webapp: $(SRC)/main.cc MyWebAppServer.cc 
-	g++ -o $@ $^ -lmy_http -lmymuduo.a -lmysqlclient
+	g++ -o $@ $^ -lmy_http -lmymuduo 
 
 webapp_static: $(SRC)/main.cc MyWebAppServer.cc 
 	g++ -o $@ $^ -Wl,-Bstatic -lmy_http -Wl,-Bstatic -lmymuduo -Wl,-Bdynamic -lmysqlclient
@@ -18,6 +18,6 @@ static: $(SRC)/main.cc MyWebAppServer.cc
 	g++ -static -o $@ $^ -lmy_http -lmymuduo -lmysqlclient
 
 clean:
-	rm -f webapp
+	rm -f webapp webapp_static static
 
 .PHONY: all clean

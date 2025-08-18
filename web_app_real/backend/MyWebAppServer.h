@@ -50,15 +50,15 @@ public:
         // 不必，因为这里使用的时懒汉模式的单例模式
 
         // 初始化会话
-        initSession();
+        initSessionManager();
 
         // 初始化路由
-        initRouter();
+        registerRoutes();
     }
 
-    void initRouter();
+    void registerRoutes();
 
-    void initSession();
+    void initSessionManager();
 
     void setThreadNum(int num)
     {
@@ -70,15 +70,18 @@ private:
     void testCallback(const HttpRequest &req, HttpResponse *resp);
     void faviconCallback(const HttpRequest &req, HttpResponse *resp);
 
-    // # 需要会话管理的路径：
     void indexCallback(const HttpRequest &req, HttpResponse *resp);
-    void loginCallback(const HttpRequest &req, HttpResponse *resp);
     void registerCallback(const HttpRequest &req, HttpResponse *resp);
+
+    // # 需要会话管理的路径：
+    void loginCallback(const HttpRequest &req, HttpResponse *resp);
     void postdataCallback(const HttpRequest &req, HttpResponse *resp);
     void userdataCallback(const HttpRequest &req, HttpResponse *resp);
     void logoutCallback(const HttpRequest &req, HttpResponse *resp);
 
 private:
+    // 这些就是进行了数据库操作的全部函数，
+    // 如果要进行 SQL 语句优化，就从这里面的 SQL 语句着手
     int queryUserId(const std::string &username, const std::string &password);
     std::string queryUserData(const std::string &username);
     bool postUserData(const std::string &username, const std::string &userdata);
