@@ -69,3 +69,8 @@ json 数据的格式解析错误;
 
 - 增加定时器关闭超时的 session，减少服务器资源占用 （storage_.load() 并不能完全处理，因为它只有在通过确切的 sessionId 访问时才会清除过期 session）
   这实际上是 HTTP 框架的任务
+
+# TODO: improve
+
+- play with CMakeLists.txt
+  (see Claude history)
