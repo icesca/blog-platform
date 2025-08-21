@@ -17,6 +17,10 @@ int main(int argc, char *argv[])
     numThreads = atoi(argv[1]);
   }
 
+  int blockqueue_size = 1024;
+  Logger::instance()->init(LogLevel::TRACE, "./logs", ".log", blockqueue_size);
+
+
   EventLoop loop;
   MyWebAppServer server(&loop, InetAddress(50000, "0.0.0.0"), std::string("dummy"));
   server.setThreadNum(numThreads);

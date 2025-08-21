@@ -1159,14 +1159,9 @@ int MyWebAppServer::queryUserId(const std::string &username, const std::string &
     std::shared_ptr<Connection> conn_sp = ConnectionPool::getConnectionPool()->getConnection();
     std::string query_str = "SELECT id FROM users WHERE username = \"" + username + "\" AND password = \"" + password + "\"";
     MySQLResult *res = conn_sp->query(query_str);
-#define DEBUG
-#ifdef DEBUG
-    std::cout << username << " " << password << '\n';
-    std::cout << res << '\n';
-#endif
     if (!res)
     {
-        LOG_ERROR("MySQL query error\n");
+        LOG_ERROR("MySQL query error");
         return -1;
     }
     else
@@ -1185,7 +1180,7 @@ std::string MyWebAppServer::queryUserData(const std::string &username)
     MySQLResult *res = conn_sp->query(query_str);
     if (!res)
     {
-        LOG_ERROR("MySQL query error\n");
+        LOG_ERROR("MySQL query error");
         return "";
     }
     else
@@ -1212,7 +1207,7 @@ int MyWebAppServer::checkUserExists(const std::string &username)
     MySQLResult *res = conn_sp->query(query_str);
     if (!res)
     {
-        LOG_ERROR("MySQL query error\n");
+        LOG_ERROR("MySQL query error");
         return -1;
     }
     else
@@ -1231,7 +1226,7 @@ int MyWebAppServer::registerUser(const std::string &username, const std::string 
     auto res = conn_sp->update(query_str);
     if (!res)
     {
-        LOG_ERROR("MySQL update error\n");
+        LOG_ERROR("MySQL update error");
         throw std::runtime_error("Failed to register user");
     }
     else
