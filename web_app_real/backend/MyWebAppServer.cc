@@ -1171,10 +1171,10 @@ int MyWebAppServer::queryUserId(const std::string &username, const std::string &
     }
     else
     {
-        if (res->getRowCount() == 0)
+        if (res->num_rows() == 0)
             return -1;
         else
-            return std::stoi(res->getValue(0, "id"));
+            return std::stoi(res->at_key(0, "id"));
     }
 }
 
@@ -1190,10 +1190,10 @@ std::string MyWebAppServer::queryUserData(const std::string &username)
     }
     else
     {
-        if (res->getRowCount() == 0)
+        if (res->num_rows() == 0)
             return "";
         else
-            return res->getValue(0, "userdata");
+            return res->at_key(0, "userdata");
     }
 }
 
@@ -1217,10 +1217,10 @@ int MyWebAppServer::checkUserExists(const std::string &username)
     }
     else
     {
-        if (res->getRowCount() == 0)
+        if (res->num_rows() == 0)
             return -1;
         else
-            return std::stoi(res->getValue(0, "id"));
+            return std::stoi(res->at_key(0, "id"));
     }
 }
 
