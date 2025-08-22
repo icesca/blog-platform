@@ -14,6 +14,7 @@ FLUSH PRIVILEGES;
 
 ---------------------------
 # 职责分离的考虑
+done
 
 ## 什么由 HttpServer 模块来处理
 以处理 400 Bad Request 为例，
