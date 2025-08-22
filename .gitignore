@@ -1,2 +1,5 @@
 .vscode/
-build/
+backend/build/
+backend/bin/logs/
+backend/bin/webapp
+backend/bin/webapp_static

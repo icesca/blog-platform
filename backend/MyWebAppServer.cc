@@ -34,7 +34,7 @@ void MyWebAppServer::testCallback(const HttpRequest &req, HttpResponse *resp)
 {
     resp->setStatusLine(req.getVersionStr(), HttpResponse::k200Ok, "OK");
     resp->setContentType("text/html");
-    resp->addHeader("Server", "Muduo");
+    resp->addHeader("Server", "fake server name");
     std::string now = Timestamp::now().toString();
     std::string body =
         "<!DOCTYPE html>"
@@ -51,29 +51,30 @@ void MyWebAppServer::faviconCallback(const HttpRequest &req, HttpResponse *resp)
 {
     resp->setStatusLine(req.getVersionStr(), HttpResponse::k200Ok, "OK");
     resp->setContentType("image/png");
-//    resp->setBody(std::string(favicon, sizeof favicon));
-//	  LOG_TRACE("sizeof favicon: %lu", sizeof favicon);
-//    resp->setContentLength(sizeof favicon);
-	resp->setBody(favicon);
-	LOG_TRACE("sizeof favicon: %lu", favicon.size());
+    //    resp->setBody(std::string(favicon, sizeof favicon));
+    //	  LOG_TRACE("sizeof favicon: %lu", sizeof favicon);
+    //    resp->setContentLength(sizeof favicon);
+    resp->setBody(favicon);
+    LOG_TRACE("sizeof favicon: %lu", favicon.size());
     resp->setContentLength(favicon.size());
 }
 
 // GET
 void MyWebAppServer::indexCallback(const HttpRequest &req, HttpResponse *resp)
 {
-    std::string reqFile;
-    reqFile.append("../frontend/index.html");
-    FileUtil fileOperater(reqFile);
-    if (!fileOperater.isValid())
+    std::string req_pathname;
+    req_pathname.append("../frontend/index.html");
+    FileUtil index_file(req_pathname);
+    if (!index_file.isValid())
     {
-        LOG_ERROR("%s does not exist", reqFile.c_str());
-        fileOperater.resetDefaultFile(); // 404 NOT FOUND
+        LOG_FATAL("MyWebAppServer::%s() => %s does not exist, aborting", __func__, req_pathname.c_str());
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        abort();
     }
 
-    // Q: why std::vector<chat> then std::string
-    std::vector<char> buffer(fileOperater.size());
-    fileOperater.readFile(buffer); // 读出文件数据
+    // Q: why std::vector<char> then std::string
+    std::vector<char> buffer(index_file.size());
+    index_file.readFile(buffer); // 读出文件数据
     std::string bufStr = std::string(buffer.data(), buffer.size());
 
     resp->setStatusLine(req.getVersionStr(), HttpResponse::k200Ok, "OK");
@@ -91,7 +92,7 @@ void MyWebAppServer::indexCallback(const HttpRequest &req, HttpResponse *resp)
     resp->setBody(bufStr);
 }
 
-// GET
+// POST
 void MyWebAppServer::registerCallback(const HttpRequest &req, HttpResponse *resp)
 {
     /*
@@ -109,7 +110,7 @@ void MyWebAppServer::registerCallback(const HttpRequest &req, HttpResponse *resp
     std::string body = req.getBody();
 
     // body.empty() 的问题在 HttpContext::parseRequest() 中已经反馈了
-    if (content_type.empty() || content_type != "application/json" || body.empty())
+    if (content_type != "application/json" || body.empty())
     {
         LOG_INFO("get content:\n%s", body.c_str());
 
@@ -118,7 +119,7 @@ void MyWebAppServer::registerCallback(const HttpRequest &req, HttpResponse *resp
         failureResp["message"] = "格式错误";
         std::string failureBody = failureResp.dump(4);
 
-        resp->setStatusLine(req.getVersionStr(), HttpResponse::k400BadRequest, "(TEST) Bad Request");
+        resp->setStatusLine(req.getVersionStr(), HttpResponse::k400BadRequest, "Bad Request");
         resp->setCloseConnection(true);
         resp->setContentType("application/json");
         resp->setContentLength(failureBody.size());
@@ -278,7 +279,7 @@ void MyWebAppServer::postdataCallback(const HttpRequest &req, HttpResponse *resp
     std::string content_type = req.getHeader("Content-Type");
     std::string body = req.getBody();
 
-    if (content_type.empty() || content_type != "application/json" || body.empty())
+    if (content_type != "application/json" || body.empty())
     {
         LOG_INFO("get content:\n%s", body.c_str());
 
@@ -389,7 +390,7 @@ void MyWebAppServer::loginCallback(const HttpRequest &req, HttpResponse *resp)
     std::string body = req.getBody();
 
     // body.empty() 的问题在 HttpContext::parseRequest() 中已经反馈了
-    if (content_type.empty() || content_type != "application/json" || body.empty())
+    if (content_type != "application/json" || body.empty())
     {
         LOG_INFO("get content:\n%s", body.c_str());
 
