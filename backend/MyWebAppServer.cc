@@ -392,14 +392,14 @@ void MyWebAppServer::loginCallback(const HttpRequest &req, HttpResponse *resp)
     // body.empty() 的问题在 HttpContext::parseRequest() 中已经反馈了
     if (content_type != "application/json" || body.empty())
     {
-        LOG_INFO("get content:\n%s", body.c_str());
+        LOG_INFO("%s() => 400 Bad Request: get content:\n%s", __func__, body.c_str());
 
         json failureResp;
         failureResp["status"] = "error";
         failureResp["message"] = "格式错误";
         std::string failureBody = failureResp.dump(4);
 
-        resp->setStatusLine(req.getVersionStr(), HttpResponse::k400BadRequest, "(TEST) Bad Request");
+        resp->setStatusLine(req.getVersionStr(), HttpResponse::k400BadRequest, "Bad Request");
         resp->setCloseConnection(true);
         resp->setContentType("application/json");
         resp->setContentLength(failureBody.size());

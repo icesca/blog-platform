@@ -73,11 +73,20 @@ private:
     void indexCallback(const HttpRequest &req, HttpResponse *resp);
     void registerCallback(const HttpRequest &req, HttpResponse *resp);
 
+    void list_hot_articlesCallback(const HttpRequest &req, HttpResponse *resp);
+    void list_usersCallback(const HttpRequest &req, HttpResponse *resp);
+    void list_user_articlesCallback(const HttpRequest &req, HttpResponse *resp);
+
     // # 需要会话管理的路径：
     void loginCallback(const HttpRequest &req, HttpResponse *resp);
     void postdataCallback(const HttpRequest &req, HttpResponse *resp);
     void userdataCallback(const HttpRequest &req, HttpResponse *resp);
     void logoutCallback(const HttpRequest &req, HttpResponse *resp);
+
+    void post_articleCallback(const HttpRequest &req, HttpResponse *resp);
+    void modify_articleCallback(const HttpRequest &req, HttpResponse *resp);
+    void delete_articleCallback(const HttpRequest &req, HttpResponse *resp);
+    void list_my_articleCallback(const HttpRequest &req, HttpResponse *resp);
 
 private:
     // 这些就是进行了数据库操作的全部函数，
@@ -87,6 +96,14 @@ private:
     bool postUserData(const std::string &username, const std::string &userdata);
     int checkUserExists(const std::string &username);
     int registerUser(const std::string &username, const std::string &password);
+
+    bool postArticle(unsigned int uid, const std::string &title, const std::string &content);
+    bool modifyArticle(unsigned long long aid, const std::string &content);
+    bool deleteArticle(unsigned long long aid);
+
+    std::shared_ptr<json> articlesOfUser(unsigned int uid);
+    std::shared_ptr<json> hotArticles(int num);
+    std::shared_ptr<json> listUsers();
 
 private:
     HttpServer server_;

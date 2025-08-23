@@ -48,10 +48,12 @@ FLUSH PRIVILEGES;
 
 CREATE DATABASE blogdb;
 
+USE blogdb;
+
 CREATE TABLE `users` (
   `uid` INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   `username` VARCHAR(100) NOT NULL UNIQUE,
-  `password` VARCHAR(100) NOT NULL,
+  `password` VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE `articles` (
@@ -61,6 +63,9 @@ CREATE TABLE `articles` (
   `title` VARCHAR(200) NOT NULL,
   `content` TEXT NOT NULL
 );
+
+CREATE INDEX `idx_articles_uid` ON `articles`(`uid`);
+CREATE INDEX `idx_articles_time` ON `articles`(`time`);
 
 GRANT ALL PRIVILEGES ON blogdb.* TO testuser@localhost;
 FLUSH PRIVILEGES;
@@ -103,7 +108,7 @@ list_my_articles
 
 GET:
 
-list_all_articles
+x list_all_articles
   resp: 
   [
     {
