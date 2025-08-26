@@ -15,7 +15,7 @@ void MyWebAppServer::registerRoutes()
 
     server_.Get(std::string("/"), std::bind(&MyWebAppServer::indexCallback, this, std::placeholders::_1, std::placeholders::_2));
     server_.Post(std::string("/login"), std::bind(&MyWebAppServer::loginCallback, this, std::placeholders::_1, std::placeholders::_2));
-    server_.Post(std::string("/register"), std::bind(&MyWebAppServer::registerCallback, this, std::placeholders::_1, std::placeholders::_2));
+//    server_.Post(std::string("/register"), std::bind(&MyWebAppServer::registerCallback, this, std::placeholders::_1, std::placeholders::_2));
     server_.Get(std::string("/logout"), std::bind(&MyWebAppServer::logoutCallback, this, std::placeholders::_1, std::placeholders::_2));
 
     server_.Post(std::string("/post_article"), std::bind(&MyWebAppServer::post_articleCallback, this, std::placeholders::_1, std::placeholders::_2));
