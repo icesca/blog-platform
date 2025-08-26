@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 
 
   EventLoop loop;
-  MyWebAppServer server(&loop, InetAddress(50000, "0.0.0.0"), std::string("dummy"));
+  MyWebAppServer server(&loop, InetAddress(50000, "0.0.0.0"), std::string("blog_server"));
   server.setThreadNum(numThreads);
 
   server.start();
