@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Simple Blog SPA</title>
+  <style>
+    :root{--bg:#f7f8fb;--card:#ffffff;--muted:#6b7280;--accent:#2563eb}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial; background:var(--bg);color:#111}
+    .container{max-width:1100px;margin:20px auto;padding:16px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    h1{font-size:20px;margin:0}
+    .grid{display:grid;gap:16px}
+    /* responsive columns: 3 on wide, 1 on small */
+    @media(min-width:900px){.grid{grid-template-columns:280px 1fr 320px}}@media(max-width:899px){.grid{grid-template-columns:1fr}}
+
+    .card{background:var(--card);border-radius:10px;padding:14px;box-shadow:0 1px 4px rgba(16,24,40,0.04)}
+    .section-title{font-weight:600;margin-bottom:10px}
+    .user-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #eee}
+    .user-item a{color:var(--accent);text-decoration:none}
+    .article-item{padding:10px 0;border-bottom:1px solid #f0f0f0}
+    .article-title{font-weight:600;margin:0}
+    .meta{font-size:12px;color:var(--muted)}
+    .btn{display:inline-block;padding:8px 12px;border-radius:8px;border:0;background:var(--accent);color:white;cursor:pointer}
+    .btn.ghost{background:transparent;color:var(--accent);border:1px solid #e6eefc}
+    .small{font-size:13px;padding:6px 8px;border-radius:6px}
+    .muted{color:var(--muted)}
+
+    form{display:block}
+    input[type=text], input[type=password], textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-bottom:10px;font-size:14px}
+    textarea{min-height:160px;resize:vertical}
+    nav a{margin-right:10px;color:var(--accent);text-decoration:none}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .link{color:var(--accent);cursor:pointer}
+    .center{display:flex;align-items:center;gap:8px}
+    .right{display:flex;justify-content:flex-end}
+    .warning{color:#b91c1c}
+    .empty{color:var(--muted);padding:12px}
+  </style>
+</head>
+<body>
+  <div id="app" class="container">
+    <header>
+      <h1 @click="goHome" style="cursor:pointer">Simple Blog</h1>
+      <div class="center">
+        <nav>
+          <a class="link" @click.prevent="navigate('#/')">Home</a>
+          <a class="link" @click.prevent="navigate('#/myarticles')">My Articles</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main layout -->
+    <div v-if="route === 'home'" class="grid">
+      <!-- Users list -->
+      <section class="card">
+        <div class="section-title">Users</div>
+        <div v-if="users.length === 0" class="empty">Loading users...</div>
+        <div v-for="u in users" :key="u.uid" class="user-item">
+          <a href="#" @click.prevent="openUserArticles(u.uid, u.username)">{{ u.username }}</a>
+          <div class="muted">{{ u.num_of_articles }}</div>
+        </div>
+      </section>
+
+      <!-- Latest articles -->
+      <section class="card">
+        <div class="section-title">Latest Articles</div>
+        <div v-if="latestArticles.length === 0" class="empty">No articles yet.</div>
+        <div v-for="a in latestArticles" :key="a.aid" class="article-item">
+          <div class="article-title"><a href="#" @click.prevent="openArticle(a)">{{ a.title }}</a></div>
+          <div class="meta">{{ a.time }} · by <a href="#" @click.prevent="openUserArticles(a.uid, a.username)">{{ a.username }}</a></div>
+          <div style="margin-top:6px">{{ preview(a.content) }}</div>
+        </div>
+      </section>
+
+      <!-- Login / profile -->
+      <aside class="card">
+        <div class="section-title">Account</div>
+        <div v-if="!currentUserId">
+          <div style="margin-bottom:8px">You are not logged in.</div>
+          <div class="actions">
+            <button class="btn" @click="showLogin = true">Login</button>
+            <button class="btn ghost" @click="showRegister = true">Register</button>
+          </div>
+        </div>
+        <div v-else>
+          <div><strong>{{ currentUsername }}</strong></div>
+          <div class="muted">Articles: {{ currentUserArticleCount }}</div>
+          <div style="margin-top:10px" class="actions">
+            <button class="btn" @click="navigate('#/edit')">Publish New</button>
+            <button class="btn ghost" @click="navigate('#/myarticles')">My Articles</button>
+            <button class="btn" @click="logout">Logout</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- User's articles list view -->
+    <div v-if="route === 'user_articles'" class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="section-title">Articles by {{ viewUsername || (viewUid ? 'User' : '') }}</div>
+          <div class="muted">{{ viewArticles.length }} articles</div>
+        </div>
+        <div class="right"><button class="btn ghost" @click="goHome">Back</button></div>
+      </div>
+
+      <div v-if="viewArticles.length === 0" class="empty">No articles.</div>
+
+      <div v-for="a in viewArticles" :key="a.aid" style="padding:12px 0;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="article-title"><a href="#" @click.prevent="openArticle(a)">{{ a.title }}</a></div>
+          <div class="meta">{{ a.time }}</div>
+        </div>
+        <div v-if="currentUserId && isViewingOwnProfile" class="actions">
+          <button class="small" @click="startEdit(a)">Modify</button>
+          <button class="small" @click="deleteArticle(a.aid)">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Full article view -->
+    <div v-if="route === 'article'" class="card">
+      <div style="display:flex;justify-content:space-between">
+        <div>
+          <h2 style="margin:0 0 6px 0">{{ currentArticle.title }}</h2>
+          <div class="meta">{{ currentArticle.time }} · by <a href="#" @click.prevent="openUserArticles(currentArticle.uid, currentArticle.username)">{{ currentArticle.username }}</a></div>
+        </div>
+        <div class="right">
+          <button class="btn ghost" @click="goBack">Back</button>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;white-space:pre-wrap">{{ currentArticle.content }}</div>
+
+      <div v-if="currentUserId && currentArticle.uid && currentArticle.uid === currentUserId" style="margin-top:14px" class="actions">
+        <button class="btn" @click="startEdit(currentArticle)">Modify</button>
+        <button class="btn" @click="deleteArticle(currentArticle.aid)">Delete</button>
+      </div>
+    </div>
+
+    <!-- Edit / Publish page -->
+    <div v-if="route === 'edit'" class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="section-title">{{ editMode === 'new' ? 'Publish Article' : 'Edit Article' }}</div>
+        <div class="right"><button class="btn ghost" @click="goHome">Cancel</button></div>
+      </div>
+
+      <div v-if="!currentUserId" class="warning">You must be logged in to publish or edit articles.</div>
+
+      <form @submit.prevent="submitArticle">
+        <input v-model="editForm.title" type="text" placeholder="Title" required />
+        <textarea v-model="editForm.content" placeholder="Content" required></textarea>
+        <div class="actions">
+          <button class="btn" type="submit">{{ editMode === 'new' ? 'Publish' : 'Publish modification' }}</button>
+          <button class="btn ghost" type="button" @click="goHome">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- My articles page -->
+    <div v-if="route === 'myarticles'" class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="section-title">My Articles</div>
+          <div class="muted">{{ myArticles.length }} articles</div>
+        </div>
+        <div class="right"><button class="btn ghost" @click="goHome">Back</button></div>
+      </div>
+
+      <div v-if="!currentUserId" class="empty">Please login to view your articles.</div>
+
+      <div v-if="myArticles.length === 0 && currentUserId" class="empty">No articles yet.</div>
+
+      <div v-for="a in myArticles" :key="a.aid" style="padding:12px 0;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="article-title"><a href="#" @click.prevent="openArticle(a)">{{ a.title }}</a></div>
+          <div class="meta">{{ a.time }}</div>
+        </div>
+        <div class="actions">
+          <button class="small" @click="startEdit(a)">Modify</button>
+          <button class="small" @click="deleteArticle(a.aid)">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login modal (simple inline) -->
+    <div v-if="showLogin || showRegister" class="card" style="margin-top:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="section-title">{{ showLogin ? 'Login' : 'Register' }}</div>
+        <div class="right"><button class="btn ghost" @click="closeAuth">Close</button></div>
+      </div>
+
+      <form @submit.prevent="showLogin ? doLogin() : doRegister()">
+        <input v-model="auth.username" type="text" placeholder="Username" required />
+        <input v-model="auth.password" type="password" placeholder="Password" required />
+        <div class="actions">
+          <button class="btn" type="submit">{{ showLogin ? 'Login' : 'Register' }}</button>
+          <button class="btn ghost" type="button" @click="toggleAuth">Switch</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- feedback -->
+    <div v-if="message" class="card" style="margin-top:12px">
+      <div>{{ message }}</div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script>
+    const api = {
+      get: (url) => fetch(url, { credentials: 'same-origin' }).then(r => r.json()),
+      post: (url, body) => fetch(url, {method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r => r.json())
+    }
+
+    const app = Vue.createApp({
+      data(){
+        return {
+          route: 'home', // home, user_articles, article, edit, myarticles
+          users: [],
+          latestArticles: [],
+          currentUserId: null,
+          currentUsername: null,
+          currentUserArticleCount: 0,
+
+          // viewing a user's articles
+          viewUid: null,
+          viewUsername: null,
+          viewArticles: [],
+          isViewingOwnProfile: false,
+
+          // article view
+          currentArticle: {},
+
+          // edit form
+          editMode: 'new', // 'new' or 'edit'
+          editForm: { aid: null, title: '', content: '' },
+
+          // my articles
+          myArticles: [],
+
+          // auth
+          showLogin:false, showRegister:false,
+          auth: { username: '', password: ''},
+
+          message: ''
+        }
+      },
+      methods: {
+        setMessage(msg, timeout=3000){ this.message = msg; if(timeout) setTimeout(()=>this.message='', timeout) },
+        navigate(hash){ location.hash = hash },
+        goHome(){ this.navigate('#/') },
+        goBack(){ history.back() },
+        closeAuth(){ this.showLogin=false; this.showRegister=false; this.auth.username=''; this.auth.password='' },
+        toggleAuth(){ this.showLogin = !this.showLogin; this.showRegister = !this.showRegister },
+        preview(text){ if(!text) return ''; return text.length>220 ? text.slice(0,220)+'...' : text },
+
+        async fetchUsers(){ try{ const res = await api.get('/list_users'); if(res.status==='success') this.users = res.users; }catch(e){ console.error(e) } },
+        async fetchLatest(){ try{ const res = await api.get('/list_latest_articles'); if(res.status==='success') this.latestArticles = res.articles; }catch(e){ console.error(e) } },
+
+        async checkLogged(){ try{ const res = await api.get('/check_loggedin'); if(res && res.status==='success'){ this.currentUserId = res.userId; // try to determine username & count
+            // fetch users to find username / article count
+            const ures = await api.get('/list_users'); if(ures.status==='success'){ const found = ures.users.find(x=>x.uid===this.currentUserId); if(found){ this.currentUsername = found.username; this.currentUserArticleCount = found.num_of_articles } }
+            // fetch my articles to fill myArticles count & list
+            await this.loadMyArticles();
+          } else { this.currentUserId = null }
+        }catch(e){ this.currentUserId = null }
+      },
+
+      async openUserArticles(uid, username){
+        this.viewUid = uid; this.viewUsername = username || null; this.isViewingOwnProfile = (this.currentUserId && uid && this.currentUserId === uid);
+        // call /list_user_articles
+        try{
+          const res = await api.post('/list_user_articles', { uid });
+          if(res.status==='success'){ this.viewArticles = res.articles || []; this.route = 'user_articles' } else { this.setMessage(res.message||'failed to load') }
+        }catch(e){ this.setMessage('Network error') }
+      },
+
+      async openArticle(article){
+        // article may or may not have full content; if not, try to fetch from list_user_articles or list_latest_articles.
+        // We'll assume passed object contains all fields except possibly username/uid.
+        if(article && article.aid){
+          // try to find full content in latest or myArticles
+          let found = null;
+          [this.latestArticles, this.myArticles, this.viewArticles].forEach(arr=>{ if(arr) arr.forEach(x=>{ if(!found && x.aid===article.aid) found = x }) });
+          this.currentArticle = Object.assign({}, article, found || {});
+          // If currentArticle lacks uid/username (e.g. from myArticles or list_user_articles), try to recover username from users list
+          if(!this.currentArticle.username){ const u = this.users.find(u=>u.uid===this.currentArticle.uid); if(u) this.currentArticle.username = u.username }
+          this.route = 'article';
+        }
+      },
+
+      async startEdit(article){
+        if(!this.currentUserId){ this.setMessage('Please login first'); return }
+        this.editMode = article ? 'edit' : 'new';
+        if(article){ this.editForm.aid = article.aid; this.editForm.title = article.title || ''; this.editForm.content = article.content || ''; }
+        else { this.editForm.aid=null; this.editForm.title=''; this.editForm.content=''; }
+        this.route = 'edit';
+      },
+
+      async submitArticle(){
+        if(!this.currentUserId){ this.setMessage('Not logged in'); return }
+        if(this.editMode === 'new'){
+          try{
+            const res = await api.post('/post_article', { title:this.editForm.title, content:this.editForm.content });
+            if(res.status==='success'){ this.setMessage('Published'); this.goHome(); await this.refreshAll(); }
+            else this.setMessage(res.message||'publish failed');
+          }catch(e){ this.setMessage('Network error') }
+        } else {
+          try{
+            const body = { aid:this.editForm.aid, content:this.editForm.content };
+            // some servers might accept title too; include it (harmless if ignored)
+            body.title = this.editForm.title;
+            const res = await api.post('/modify_article', body);
+            if(res.status==='success'){ this.setMessage('Modification published'); this.goHome(); await this.refreshAll(); }
+            else this.setMessage(res.message||'modify failed');
+          }catch(e){ this.setMessage('Network error') }
+        }
+      },
+
+      async deleteArticle(aid){ if(!confirm('Delete this article?')) return; try{ const res = await api.post('/delete_article',{aid}); if(res.status==='success'){ this.setMessage('Deleted'); await this.refreshAll(); if(this.route==='article') this.goHome(); } else { this.setMessage(res.message||'delete failed') } }catch(e){ this.setMessage('Network error') } },
+
+      async loadMyArticles(){ if(!this.currentUserId) return; try{ const res = await api.get('/list_my_articles'); if(res.status==='success'){ this.myArticles = res.articles || []; this.currentUserArticleCount = this.myArticles.length; } }catch(e){} },
+
+      async doLogin(){ try{ const res = await api.post('/login', { username:this.auth.username, password:this.auth.password }); if(res.status==='success'){ this.currentUserId = res.userId; this.currentUsername = this.auth.username; this.showLogin=false; this.auth.password=''; this.setMessage('Logged in'); await this.refreshAll(); } else { this.setMessage(res.message||'login failed') } }catch(e){ this.setMessage('Network error') } },
+      async doRegister(){ try{ const res = await api.post('/register', { username:this.auth.username, password:this.auth.password }); if(res.status==='success'){ this.currentUserId = res.userId; this.currentUsername = this.auth.username; this.showRegister=false; this.auth.password=''; this.setMessage('Registered and logged in'); await this.refreshAll(); } else { this.setMessage(res.message||'register failed') } }catch(e){ this.setMessage('Network error') } },
+
+      async logout(){ try{ const res = await api.get('/logout'); this.currentUserId = null; this.currentUsername = null; this.currentUserArticleCount = 0; this.myArticles = []; this.setMessage('Logged out'); await this.refreshAll(); }catch(e){ this.setMessage('Network error') } },
+
+      async refreshAll(){ // refresh lists and my articles
+        await Promise.all([this.fetchUsers(), this.fetchLatest()]); if(this.currentUserId) await this.loadMyArticles();
+      },
+
+      // routing helpers
+      parseHash(){ const h = location.hash || '#/'; if(h.startsWith('#/user/')){ const uid = h.slice(7); this.openUserArticles(uid); }
+        else if(h.startsWith('#/article/')){ const aid = h.slice(10); // try to find article in lists, else set minimal
+          const found = (this.latestArticles.concat(this.myArticles || [])).find(x=>x.aid===aid);
+          if(found){ this.openArticle(found) } else { // set placeholder and switch to article route; server has no article-get endpoint, so show minimal
+            this.currentArticle = { aid, title: '(article)', content: '(full content not available)', time:'', uid: null, username:'' }; this.route='article'
+          }
+        }
+        else if(h.startsWith('#/edit')){ // optional /:aid
+          const parts = h.split('/'); if(parts.length>2 && parts[2]){ const aid = parts[2]; const found = (this.myArticles||[]).find(x=>x.aid===aid) || (this.latestArticles||[]).find(x=>x.aid===aid); this.startEdit(found||{aid}); }
+          else this.startEdit(null);
+        }
+        else if(h === '#/myarticles'){
+          this.route='myarticles'; if(this.currentUserId) this.loadMyArticles();
+        }
+        else { // home
+          this.route='home';
+        }
+      }
+      },
+      async mounted(){
+        await this.refreshAll(); await this.checkLogged();
+        // initial route parse and listen for changes
+        this.parseHash(); window.addEventListener('hashchange', ()=>this.parseHash());
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

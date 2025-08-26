@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Platform</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: #fff;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            text-align: center;
+            color: #2c3e50;
+            cursor: pointer;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            gap: 30px;
+            margin-bottom: 30px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+        
+        .sidebar, .login-section {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        
+        .content-area {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 500px;
+        }
+        
+        .section-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1a1a1a;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        
+        .user-item, .article-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .user-item:hover, .article-item:hover {
+            background-color: #f8f9fa;
+            border-color: #3498db;
+            transform: translateY(-2px);
+        }
+        
+        .article-title {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 5px;
+        }
+        
+        .article-meta {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+        }
+        
+        .article-preview {
+            font-size: 0.9em;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s;
+            margin: 3px 3px 3px 0;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+        
+        .login-form {
+            margin-bottom: 20px;
+        }
+        
+        .user-info {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        
+        .article-actions {
+            margin-top: 10px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        
+        .error {
+            color: #e74c3c;
+            background: #fdf2f2;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        
+        .success {
+            color: #27ae60;
+            background: #f2fdf5;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        
+        .article-content {
+            line-height: 1.8;
+            color: #1a1a1a;
+        }
+        
+        .article-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .back-link {
+            color: #3498db;
+            text-decoration: none;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .main-content {
+                gap: 15px;
+            }
+            
+            .content-area {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            
+            <!-- Home Page -->
+            <div v-if="currentView === 'home'" class="main-content">
+                <!-- User List Sidebar -->
+                <aside class="sidebar">
+                    <h2 class="section-title">Users</h2>
+                    <div v-if="loading.users" class="loading">Loading users...</div>
+                    <div v-else>
+                        <div v-for="user in users" :key="user.uid" 
+                             class="user-item" @click="viewUserArticles(user.uid, user.username)">
+                            <div><strong>{{ user.username }}</strong></div>
+                            <div style="font-size: 0.85em; color: #7f8c8d;">
+                                {{ user.num_of_articles }} articles
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+                
+                <!-- Latest Articles -->
+                <main class="content-area">
+                    <h2 class="section-title">Latest Articles</h2>
+                    <div v-if="loading.articles" class="loading">Loading articles...</div>
+                    <div v-else>
+                        <div v-for="article in latestArticles" :key="article.aid" 
+                             class="article-item" @click="viewArticle(article.aid)">
+                            <div class="article-title">{{ article.title }}</div>
+                            <div class="article-meta">
+                                By {{ article.username }} | {{ formatDate(article.time) }}
+                            </div>
+                            <div class="article-preview" v-html="formatContent(getPreview(article.content))">
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                
+                <!-- Login Section -->
+                <aside class="login-section">
+                    <h2 class="section-title">Account</h2>
+                    
+                    <div v-if="!currentUser">
+                        <div class="login-form">
+                            <div v-if="message.text" :class="message.type">{{ message.text }}</div>
+                            <div class="form-group">
+                                <label>Username:</label>
+                                <input type="text" v-model="loginForm.username" @keyup.enter="login">
+                            </div>
+                            <div class="form-group">
+                                <label>Password:</label>
+                                <input type="password" v-model="loginForm.password" @keyup.enter="login">
+                            </div>
+                            <button class="btn" @click="login" :disabled="loading.auth">
+                                {{ loading.auth ? 'Logging in...' : 'Login' }}
+                            </button>
+                            <button class="btn btn-secondary" @click="register" :disabled="loading.auth">
+                                {{ loading.auth ? 'Registering...' : 'Register' }}
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div v-else>
+                        <div class="user-info">
+                            <strong>{{ currentUser.username }}</strong>
+                            <div style="font-size: 0.85em; color: #7f8c8d;">
+                                {{ myArticles.length }} articles
+                            </div>
+                        </div>
+                        <button class="btn" @click="showNewArticle">New Article</button>
+                        <button class="btn btn-secondary" @click="viewMyArticles">My Articles</button>
+                        <button class="btn btn-secondary" @click="logout">Logout</button>
+                    </div>
+                </aside>
+            </div>
+            
+            <!-- Article Editor -->
+            <div v-if="currentView === 'editor'" class="content-area">
+                <a href="#" class="back-link" @click="goHome">← Back to Home</a>
+                <h2 class="section-title">
+                    {{ editingArticle ? 'Edit Article' : 'New Article' }}
+                </h2>
+                
+                <div v-if="message.text" :class="message.type">{{ message.text }}</div>
+                
+                <div class="form-group">
+                    <label>Title:</label>
+                    <input type="text" v-model="articleForm.title" placeholder="Enter article title">
+                </div>
+                
+                <div class="form-group">
+                    <label>Content:</label>
+                    <textarea v-model="articleForm.content" placeholder="Write your article content here..."></textarea>
+                </div>
+                
+                <button class="btn" @click="saveArticle" :disabled="loading.save">
+                    {{ loading.save ? 'Saving...' : (editingArticle ? 'Update Article' : 'Publish Article') }}
+                </button>
+                <button class="btn btn-secondary" @click="goHome">Cancel</button>
+            </div>
+            
+            <!-- User Articles List -->
+            <div v-if="currentView === 'userArticles'" class="content-area">
+                <a href="#" class="back-link" @click="goHome">← Back to Home</a>
+                <h2 class="section-title">Articles by {{ viewingUserName }}</h2>
+                
+                <div v-if="loading.userArticles" class="loading">Loading articles...</div>
+                <div v-else>
+                    <div v-for="article in userArticles" :key="article.aid" 
+                         class="article-item" @click="viewArticle(article.aid)">
+                        <div class="article-title">{{ article.title }}</div>
+                        <div class="article-meta">{{ formatDate(article.time) }}</div>
+                        
+                        <div v-if="currentUser && viewingUserId === currentUser.userId" class="article-actions">
+                            <button class="btn btn-secondary" @click.stop="editArticle(article)">Edit</button>
+                            <button class="btn btn-danger" @click.stop="deleteArticle(article.aid)">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Article View -->
+            <div v-if="currentView === 'article'" class="content-area">
+                <a href="#" class="back-link" @click="goHome">← Back to Home</a>
+                
+                <div v-if="loading.article" class="loading">Loading article...</div>
+                <div v-else-if="currentArticle">
+                    <div class="article-header">
+                        <h1>{{ currentArticle.title }}</h1>
+                        <div class="article-meta">
+                            <span v-if="currentArticle.username">By {{ currentArticle.username }} | </span>
+                            {{ formatDate(currentArticle.time) }}
+                        </div>
+                        
+                        <div v-if="currentUser && currentArticle.uid === currentUser.userId" class="article-actions">
+                            <button class="btn btn-secondary" @click="editCurrentArticle">Edit</button>
+                            <button class="btn btn-danger" @click="deleteCurrentArticle">Delete</button>
+                        </div>
+                    </div>
+                    
+                    <div class="article-content" v-html="formatContent(currentArticle.content)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    currentView: 'home',
+                    currentUser: null,
+                    users: [],
+                    latestArticles: [],
+                    myArticles: [],
+                    userArticles: [],
+                    currentArticle: null,
+                    viewingUserId: null,
+                    viewingUserName: '',
+                    editingArticle: null,
+                    loginForm: {
+                        username: '',
+                        password: ''
+                    },
+                    articleForm: {
+                        title: '',
+                        content: ''
+                    },
+                    loading: {
+                        users: false,
+                        articles: false,
+                        userArticles: false,
+                        article: false,
+                        auth: false,
+                        save: false
+                    },
+                    message: {
+                        text: '',
+                        type: ''
+                    }
+                }
+            },
+            
+            async mounted() {
+                await this.checkLoginStatus();
+                await this.loadInitialData();
+            },
+            
+            methods: {
+                async apiCall(endpoint, options = {}) {
+                    try {
+                        const response = await fetch(endpoint, {
+                            credentials: 'include',
+                            ...options
+                        });
+                        return await response.json();
+                    } catch (error) {
+                        console.error('API call failed:', error);
+                        return { status: 'fail', message: 'Network error' };
+                    }
+                },
+                
+                async checkLoginStatus() {
+                    const result = await this.apiCall('/check_loggedin');
+                    if (result.status === 'success') {
+                        this.currentUser = { userId: result.userId };
+                        await this.loadMyArticles();
+                        // Get username from users list after loading
+                        await this.loadUsers();
+                        const user = this.users.find(u => u.uid === result.userId);
+                        if (user) {
+                            this.currentUser.username = user.username;
+                        }
+                    }
+                },
+                
+                async loadInitialData() {
+                    await Promise.all([
+                        this.loadUsers(),
+                        this.loadLatestArticles()
+                    ]);
+                },
+                
+                async loadUsers() {
+                    this.loading.users = true;
+                    const result = await this.apiCall('/list_users');
+                    if (result.status === 'success') {
+                        this.users = result.users;
+                    }
+                    this.loading.users = false;
+                },
+                
+                async loadLatestArticles() {
+                    this.loading.articles = true;
+                    const result = await this.apiCall('/list_latest_articles');
+                    if (result.status === 'success') {
+                        this.latestArticles = result.articles;
+                    }
+                    this.loading.articles = false;
+                },
+                
+                async loadMyArticles() {
+                    if (!this.currentUser) return;
+                    const result = await this.apiCall('/list_my_articles');
+                    if (result.status === 'success') {
+                        this.myArticles = result.articles;
+                        // Set username from first article if available
+                        if (this.myArticles.length > 0 && !this.currentUser.username) {
+                            // Find username from users list
+                            const user = this.users.find(u => u.uid === this.currentUser.userId);
+                            if (user) {
+                                this.currentUser.username = user.username;
+                            }
+                        }
+                    }
+                },
+                
+                async login() {
+                    if (!this.loginForm.username || !this.loginForm.password) {
+                        this.showMessage('Please enter both username and password', 'error');
+                        return;
+                    }
+                    
+                    this.loading.auth = true;
+                    const result = await this.apiCall('/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(this.loginForm)
+                    });
+                    
+                    if (result.status === 'success') {
+                        this.currentUser = { 
+                            userId: result.userId, 
+                            username: this.loginForm.username 
+                        };
+                        this.loginForm = { username: '', password: '' };
+                        this.showMessage('Login successful!', 'success');
+                        await this.loadMyArticles();
+                        await this.loadInitialData(); // Refresh data
+                    } else {
+                        this.showMessage(result.message, 'error');
+                    }
+                    this.loading.auth = false;
+                },
+                
+                async register() {
+                    if (!this.loginForm.username || !this.loginForm.password) {
+                        this.showMessage('Please enter both username and password', 'error');
+                        return;
+                    }
+                    
+                    this.loading.auth = true;
+                    const result = await this.apiCall('/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(this.loginForm)
+                    });
+                    
+                    if (result.status === 'success') {
+                        this.currentUser = { 
+                            userId: result.userId, 
+                            username: this.loginForm.username 
+                        };
+                        this.loginForm = { username: '', password: '' };
+                        this.showMessage('Registration successful!', 'success');
+                        await this.loadMyArticles();
+                        await this.loadInitialData(); // Refresh data
+                    } else {
+                        this.showMessage(result.message, 'error');
+                    }
+                    this.loading.auth = false;
+                },
+                
+                async logout() {
+                    await this.apiCall('/logout');
+                    this.currentUser = null;
+                    this.myArticles = [];
+                    this.showMessage('Logged out successfully', 'success');
+                    await this.loadInitialData(); // Refresh data
+                },
+                
+                async saveArticle() {
+                    if (!this.articleForm.title || !this.articleForm.content) {
+                        this.showMessage('Please enter both title and content', 'error');
+                        return;
+                    }
+                    
+                    this.loading.save = true;
+                    let result;
+                    
+                    if (this.editingArticle) {
+                        result = await this.apiCall('/modify_article', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                aid: this.editingArticle.aid,
+                                title: this.articleForm.title,
+                                content: this.articleForm.content
+                            })
+                        });
+                    } else {
+                        result = await this.apiCall('/post_article', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.articleForm)
+                        });
+                    }
+                    
+                    if (result.status === 'success') {
+                        this.showMessage(result.message, 'success');
+                        this.articleForm = { title: '', content: '' };
+                        this.editingArticle = null;
+                        this.goHome();
+                        await this.loadInitialData();
+                        await this.loadMyArticles();
+                    } else {
+                        this.showMessage(result.message, 'error');
+                    }
+                    this.loading.save = false;
+                },
+                
+                async deleteArticle(aid) {
+                    if (!confirm('Are you sure you want to delete this article?')) return;
+                    
+                    const result = await this.apiCall('/delete_article', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ aid })
+                    });
+                    
+                    if (result.status === 'success') {
+                        this.showMessage('Article deleted successfully', 'success');
+                        await this.loadInitialData();
+                        await this.loadMyArticles();
+                        if (this.currentView === 'userArticles') {
+                            await this.loadUserArticles(this.viewingUserId);
+                        }
+                    } else {
+                        this.showMessage(result.message, 'error');
+                    }
+                },
+                
+                async deleteCurrentArticle() {
+                    await this.deleteArticle(this.currentArticle.aid);
+                    this.goHome();
+                },
+                
+                async viewUserArticles(userId, username) {
+                    this.viewingUserId = userId;
+                    this.viewingUserName = username;
+                    this.currentView = 'userArticles';
+                    await this.loadUserArticles(userId);
+                },
+                
+                async loadUserArticles(userId) {
+                    this.loading.userArticles = true;
+                    const result = await this.apiCall('/list_user_articles', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uid: userId })
+                    });
+                    
+                    if (result.status === 'success') {
+                        this.userArticles = result.articles;
+                    }
+                    this.loading.userArticles = false;
+                },
+                
+                async viewArticle(aid) {
+                    this.currentView = 'article';
+                    this.loading.article = true;
+                    
+                    // Find article in available lists
+                    let article = this.latestArticles.find(a => a.aid === aid) ||
+                                 this.myArticles.find(a => a.aid === aid) ||
+                                 this.userArticles.find(a => a.aid === aid);
+                    
+                    if (article) {
+                        this.currentArticle = article;
+                    }
+                    this.loading.article = false;
+                },
+                
+                viewMyArticles() {
+                    if (this.currentUser) {
+                        this.viewUserArticles(this.currentUser.userId, this.currentUser.username);
+                    }
+                },
+                
+                showNewArticle() {
+                    this.currentView = 'editor';
+                    this.articleForm = { title: '', content: '' };
+                    this.editingArticle = null;
+                    this.clearMessage();
+                },
+                
+                editArticle(article) {
+                    this.currentView = 'editor';
+                    this.articleForm = { title: article.title, content: article.content };
+                    this.editingArticle = article;
+                    this.clearMessage();
+                },
+                
+                editCurrentArticle() {
+                    this.editArticle(this.currentArticle);
+                },
+                
+                goHome() {
+                    this.currentView = 'home';
+                    this.clearMessage();
+                },
+                
+                showMessage(text, type) {
+                    this.message = { text, type };
+                    setTimeout(() => this.clearMessage(), 5000);
+                },
+                
+                clearMessage() {
+                    this.message = { text: '', type: '' };
+                },
+                
+                formatDate(dateString) {
+                    // Handle both string timestamps and epoch seconds
+                    let date;
+                    if (typeof dateString === 'string' && dateString.match(/^\d+$/)) {
+                        // It's epoch seconds as a string
+                        date = new Date(parseInt(dateString) * 1000);
+                    } else if (typeof dateString === 'number') {
+                        // It's epoch seconds as a number
+                        date = new Date(dateString * 1000);
+                    } else {
+                        // It's a regular date string
+                        date = new Date(dateString);
+                    }
+                    
+                    return date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                },
+                
+                getPreview(content) {
+                    return content.length > 150 ? content.substring(0, 150) + '...' : content;
+                },
+                
+                formatContent(content) {
+                    // Convert newlines to <br> tags and escape other HTML
+                    return content
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;')
+                        .replace(/\n/g, '<br>');
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

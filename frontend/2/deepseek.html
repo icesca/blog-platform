@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Platform</title>
+    <!-- Load Vue 3 from CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Load Vue Router from CDN -->
+    <script src="https://unpkg.com/vue-router@4/dist/vue-router.global.js"></script>
+    <style>
+        :root {
+            --primary-color: #4a89dc;
+            --secondary-color: #5d9cec;
+            --text-color: #333;
+            --light-gray: #f5f7fa;
+            --border-color: #ddd;
+            --success-color: #48cfad;
+            --warning-color: #ffce54;
+            --error-color: #ed5565;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f9f9f9;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        @media (min-width: 768px) {
+            .main-content {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr 2fr 1fr;
+            }
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .user-item, .article-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .user-item:last-child, .article-item:last-child {
+            border-bottom: none;
+        }
+        
+        .user-link, .article-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .user-link:hover, .article-link:hover {
+            text-decoration: underline;
+        }
+        
+        .article-meta {
+            font-size: 0.85rem;
+            color: #777;
+            margin-top: 0.25rem;
+        }
+        
+        .article-preview {
+            margin-top: 0.5rem;
+            color: #555;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+        
+        .btn:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+        }
+        
+        .btn-success:hover {
+            background-color: #37bc9b;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+        }
+        
+        .btn-warning:hover {
+            background-color: #f6bb42;
+        }
+        
+        .btn-error {
+            background-color: var(--error-color);
+        }
+        
+        .btn-error:hover {
+            background-color: #da4453;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+        
+        .article-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .full-article {
+            line-height: 1.8;
+        }
+        
+        .full-article h1 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        
+        .full-article .article-meta {
+            margin-bottom: 2rem;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-success {
+            background-color: #e5f8f2;
+            color: var(--success-color);
+            border: 1px solid #a0d6c6;
+        }
+        
+        .alert-error {
+            background-color: #fcebea;
+            color: var(--error-color);
+            border: 1px solid #e9b9bf;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #777;
+        }
+        
+        .login-form input {
+            margin-bottom: 1rem;
+        }
+        
+        .user-info {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script>
+        // Define components
+        const Home = {
+            template: `
+                <div>
+                    <header>
+                        <div class="container header-content">
+                            <div class="logo">Blog Platform</div>
+                            <div v-if="currentUser">
+                                <span>Hello, {{ currentUser.username }}!</span>
+                            </div>
+                        </div>
+                    </header>
+                    
+                    <div class="container">
+                        <div v-if="alertMessage" :class="['alert', alertType]">
+                            {{ alertMessage }}
+                        </div>
+                        
+                        <div class="main-content">
+                            <!-- User List Region -->
+                            <div class="card">
+                                <div class="card-header">Users</div>
+                                <div v-if="loadingUsers" class="loading">Loading users...</div>
+                                <div v-else>
+                                    <div v-for="user in users" :key="user.uid" class="user-item">
+                                        <a @click="viewUserArticles(user.uid)" class="user-link">{{ user.username }}</a>
+                                        <span> ({{ user.num_of_articles }} articles)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Latest Articles Region -->
+                            <div class="card">
+                                <div class="card-header">Latest Articles</div>
+                                <div v-if="loadingArticles" class="loading">Loading articles...</div>
+                                <div v-else>
+                                    <div v-for="article in latestArticles" :key="article.aid" class="article-item">
+                                        <a @click="viewArticle(article.aid)" class="article-link">{{ article.title }}</a>
+                                        <div class="article-meta">
+                                            {{ formatDate(article.time) }} by {{ article.username }}
+                                        </div>
+                                        <div class="article-preview">
+                                            {{ truncateContent(article.content) }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Login Information Region -->
+                            <div class="card">
+                                <div class="card-header">Account</div>
+                                <div v-if="currentUser">
+                                    <div class="user-info">
+                                        <p>Welcome, {{ currentUser.username }}!</p>
+                                        <p>You have {{ currentUser.articleCount }} articles.</p>
+                                    </div>
+                                    <button @click="newArticle" class="btn">Publish New Article</button>
+                                    <button @click="viewMyArticles" class="btn" style="margin-left: 10px;">My Articles</button>
+                                    <button @click="logout" class="btn" style="margin-left: 10px;">Logout</button>
+                                </div>
+                                <div v-else>
+                                    <h3>Login</h3>
+                                    <div class="login-form">
+                                        <input v-model="loginData.username" type="text" placeholder="Username">
+                                        <input v-model="loginData.password" type="password" placeholder="Password">
+                                        <button @click="login" class="btn">Login</button>
+                                    </div>
+                                    <hr>
+                                    <h3>Register</h3>
+                                    <div class="login-form">
+                                        <input v-model="registerData.username" type="text" placeholder="Username">
+                                        <input v-model="registerData.password" type="password" placeholder="Password">
+                                        <button @click="register" class="btn btn-success">Register</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            data() {
+                return {
+                    users: [],
+                    latestArticles: [],
+                    loadingUsers: true,
+                    loadingArticles: true,
+                    loginData: {
+                        username: '',
+                        password: ''
+                    },
+                    registerData: {
+                        username: '',
+                        password: ''
+                    },
+                    alertMessage: '',
+                    alertType: 'alert-success'
+                }
+            },
+            computed: {
+                currentUser() {
+                    return this.$root.currentUser;
+                }
+            },
+            async mounted() {
+                await this.loadUsers();
+                await this.loadLatestArticles();
+                await this.checkLoggedIn();
+            },
+            methods: {
+                async loadUsers() {
+                    try {
+                        const response = await fetch('/list_users');
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            this.users = data.users;
+                        } else {
+                            this.showAlert('Failed to load users: ' + data.message, 'error');
+                        }
+                    } catch (error) {
+                        this.showAlert('Error loading users: ' + error.message, 'error');
+                    } finally {
+                        this.loadingUsers = false;
+                    }
+                },
+                async loadLatestArticles() {
+                    try {
+                        const response = await fetch('/list_latest_articles');
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            this.latestArticles = data.articles;
+                        } else {
+                            this.showAlert('Failed to load articles: ' + data.message, 'error');
+                        }
+                    } catch (error) {
+                        this.showAlert('Error loading articles: ' + error.message, 'error');
+                    } finally {
+                        this.loadingArticles = false;
+                    }
+                },
+                async checkLoggedIn() {
+                    try {
+                        const response = await fetch('/check_loggedin');
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            this.$root.setCurrentUser({
+                                userId: data.userId,
+                                username: data.username || 'User' // Assuming the API might return username
+                            });
+                        }
+                    } catch (error) {
+                        // Not logged in, which is fine
+                    }
+                },
+                async login() {
+                    try {
+                        const response = await fetch('/login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(this.loginData)
+                        });
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            this.$root.setCurrentUser({
+                                userId: data.userId,
+                                username: this.loginData.username
+                            });
+                            this.showAlert('Login successful!', 'success');
+                            this.loginData = { username: '', password: '' };
+                        } else {
+                            this.showAlert('Login failed: ' + data.message, 'error');
+                        }
+                    } catch (error) {
+                        this.showAlert('Error during login: ' + error.message, 'error');
+                    }
+                },
+                async register() {
+                    try {
+                        const response = await fetch('/register', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(this.registerData)
+                        });
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            this.showAlert('Registration successful! Please login.', 'success');
+                            this.registerData = { username: '', password: '' };
+                        } else {
+                            this.showAlert('Registration failed: ' + data.message, 'error');
+                        }
+                    } catch (error) {
+                        this.showAlert('Error during registration: ' + error.message, 'error');
+                    }
+                },
+                async logout() {
+                    try {
+                        const response = await fetch('/logout');
+                        if (response.ok) {
+                            this.$root.setCurrentUser(null);
+                            this.showAlert('Logout successful!', 'success');
+                        } else {
+                            this.showAlert('Logout failed', 'error');
+                        }
+                    } catch (error) {
+                        this.showAlert('Error during logout: ' + error.message, 'error');
+                    }
+                },
+                viewUserArticles(uid) {
+                    this.$router.push(`/user/${uid}/articles`);
+                },
+                viewArticle(aid) {
+                    this.$router.push(`/article/${aid}`);
+                },
+                newArticle() {
+                    this.$router.push('/article/edit/new');
+                },
+                viewMyArticles() {
+                    if (this.currentUser) {
+                        this.$router.push(`/user/${this.currentUser.userId}/articles`);
+                    }
+                },
+                truncateContent(content) {
+                    return content.length > 150 ? content.substring(0, 150) + '...' : content;
+                },
+                formatDate(dateString) {
+                    return new Date(dateString).toLocaleDateString();
+                },
+                showAlert(message, type) {
+                    this.alertMessage = message;
+                    this.alertType = type === 'success' ? 'alert-success' : 'alert-error';
+                    setTimeout(() => {
+                        this.alertMessage = '';
+                    }, 3000);
+                }
+            }
+        };
+
+        const UserArticles = {
+            template: `
+                <div>
+                    <header>
+                        <div class="container header-content">
+                            <div class="logo" @click="$router.push('/')" style="cursor: pointer;">Blog Platform</div>
+                            <div v-if="currentUser">
+                                <span>Hello, {{ currentUser.username }}!</span>
+                            </div>
+                        </div>
+                    </header>
+                    
+                    <div class="container">
+                        <button @click="$router.push('/')" class="btn">Back to Home</button>
+                        
+                        <div v-if="alertMessage" :class="['alert', alertType]">
+                            {{ alertMessage }}
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                Articles by {{ user ? user.username : 'User' }}
+                                <span v-if="isOwnPage">(Your articles)</span>
+                            </div>
+                            <div v-if="loading" class="loading">Loading articles...</div>
+                            <div v-else-if="articles.length === 0">
+                                <p>No articles found.</p>
+                            </div>
+                            <div v-else>
+                                <div v-for="article in articles" :key="article.aid" class="article-item">
+                                    <a @click="viewArticle(article.aid)" class="article-link">{{ article.title }}</a>
+                                    <div class="article-meta">
+                                        {{ formatDate(article.time) }}
+                                    </div>
+                                    <div v-if="isOwnPage" class="article-actions">
+                                        <button @click="editArticle(article.aid)" class="btn btn-warning">Edit</button>
+                                        <button @click="deleteArticle(article.aid)" class="btn btn-error">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            data() {
+                return {
+                    articles: [],
+                    user: null,
+                    loading: true,
+                    alertMessage: '',
+                    alertType: 'alert-success'
+                }
+            },
+            computed: {
+                currentUser() {
+                    return this.$root.currentUser;
+                },
+                isOwnPage() {
+                    return this.currentUser && this.user && this.currentUser.userId === this.user.uid;
+                }
+            },
+            async mounted() {
+                await this.loadUserArticles();
+            },
+            methods: {
+                async loadUserArticles() {
+                    try {
+                        const uid = this.$route.params.uid;
+                        const response = await fetch('/list_user_articles', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ uid })
+                        });
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            this.articles = data.articles;
+                            
+                            // Try to get user info from the users list
+                            const usersResponse = await fetch('/list_users');
+                            const usersData = await usersResponse.json();
+                            if (usersData.status === 'success') {
+                                this.user = usersData.users.find(u => u.uid === uid);
+                            }
+                        } else {
+                            this.showAlert('Failed to load articles: ' + data.message, 'error');
+                        }
+                    } catch (error) {
+                        this.showAlert('Error loading articles: ' + error.message, 'error');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                viewArticle(aid) {
+                    this.$router.push(`/article/${aid}`);
+                },
+                editArticle(aid) {
+                    this.$router.push(`/article/edit/${aid}`);
+                },
+                async deleteArticle(aid) {
+                    if (!confirm('Are you sure you want to delete this article?')) return;
+                    
+                    try {
+                        const response = await fetch('/delete_article', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ aid })
+                        });
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            this.showAlert('Article deleted successfully!', 'success');
+                            // Reload the articles list
+                            await this.loadUserArticles();
+                        } else {
+                            this.showAlert('Failed to delete article: ' + data.message, 'error');
+                        }
+                    } catch (error) {
+                        this.showAlert('Error deleting article: ' + error.message, 'error');
+                    }
+                },
+                formatDate(dateString) {
+                    return new Date(dateString).toLocaleDateString();
+                },
+                showAlert(message, type) {
+                    this.alertMessage = message;
+                    this.alertType = type === 'success' ? 'alert-success' : 'alert-error';
+                    setTimeout(() => {
+                        this.alertMessage = '';
+                    }, 3000);
+                }
+            }
+        };
+
+        const ArticleDetail = {
+            template: `
+                <div>
+                    <header>
+                        <div class="container header-content">
+                            <div class="logo" @click="$router.push('/')" style="cursor: pointer;">Blog Platform</div>
+                            <div v-if="currentUser">
+                                <span>Hello, {{ currentUser.username }}!</span>
+                            </div>
+                        </div>
+                    </header>
+                    
+                    <div class="container">
+                        <button @click="$router.push('/')" class="btn">Back to Home</button>
+                        
+                        <div v-if="alertMessage" :class="['alert', alertType]">
+                            {{ alertMessage }}
+                        </div>
+                        
+                        <div v-if="loading" class="loading">Loading article...</div>
+                        <div v-else-if="article" class="card">
+                            <h1>{{ article.title }}</h1>
+                            <div class="article-meta">
+                                {{ formatDate(article.time) }} by {{ article.username }}
+                            </div>
+                            <div class="full-article">
+                                <p>{{ article.content }}</p>
+                            </div>
+                            <div v-if="isAuthor" class="article-actions">
+                                <button @click="editArticle(article.aid)" class="btn btn-warning">Edit</button>
+                                <button @click="deleteArticle(article.aid)" class="btn btn-error">Delete</button>
+                            </div>
+                        </div>
+                        <div v-else>
+                            <p>Article not found.</p>
+                        </div>
+                    </div>
+                </div>
+            `,
+            data() {
+                return {
+                    article: null,
+                    loading: true,
+                    alertMessage: '',
+                    alertType: 'alert-success'
+                }
+            },
+            computed: {
+                currentUser() {
+                    return this.$root.currentUser;
+                },
+                isAuthor() {
+                    return this.currentUser && this.article && this.currentUser.userId === this.article.uid;
+                }
+            },
+            async mounted() {
+                await this.loadArticle();
+            },
+            methods: {
+                async loadArticle() {
+                    try {
+                        // Since we don't have a direct API to get a single article,
+                        // we'll load all latest articles and find the one we need
+                        const response = await fetch('/list_latest_articles');
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            const aid = this.$route.params.aid;
+                            this.article = data.articles.find(a => a.aid === aid);
+                            if (!this.article) {
+                                this.showAlert('Article not found', 'error');
+                            }
+                        } else {
+                            this.showAlert('Failed to load article: ' + data.message, 'error');
+                        }
+                    } catch (error) {
+                        this.showAlert('Error loading article: ' + error.message, 'error');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                editArticle(aid) {
+                    this.$router.push(`/article/edit/${aid}`);
+                },
+                async deleteArticle(aid) {
+                    if (!confirm('Are you sure you want to delete this article?')) return;
+                    
+                    try {
+                        const response = await fetch('/delete_article', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ aid })
+                        });
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            this.showAlert('Article deleted successfully!', 'success');
+                            this.$router.push('/');
+                        } else {
+                            this.showAlert('Failed to delete article: ' + data.message, 'error');
+                        }
+                    } catch (error) {
+                        this.showAlert('Error deleting article: ' + error.message, 'error');
+                    }
+                },
+                formatDate(dateString) {
+                    return new Date(dateString).toLocaleDateString();
+                },
+                showAlert(message, type) {
+                    this.alertMessage = message;
+                    this.alertType = type === 'success' ? 'alert-success' : 'alert-error';
+                    setTimeout(() => {
+                        this.alertMessage = '';
+                    }, 3000);
+                }
+            }
+        };
+
+        const EditArticle = {
+            template: `
+                <div>
+                    <header>
+                        <div class="container header-content">
+                            <div class="logo" @click="$router.push('/')" style="cursor: pointer;">Blog Platform</div>
+                            <div v-if="currentUser">
+                                <span>Hello, {{ currentUser.username }}!</span>
+                            </div>
+                        </div>
+                    </header>
+                    
+                    <div class="container">
+                        <button @click="goBack" class="btn">Back</button>
+                        
+                        <div v-if="alertMessage" :class="['alert', alertType]">
+                            {{ alertMessage }}
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                {{ isNew ? 'Create New Article' : 'Edit Article' }}
+                            </div>
+                            <div class="form-group">
+                                <label for="title">Title</label>
+                                <input id="title" v-model="articleData.title" type="text">
+                            </div>
+                            <div class="form-group">
+                                <label for="content">Content</label>
+                                <textarea id="content" v-model="articleData.content"></textarea>
+                            </div>
+                            <button @click="saveArticle" class="btn" :disabled="saving">
+                                {{ saving ? 'Saving...' : (isNew ? 'Publish' : 'Save Changes') }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `,
+            data() {
+                return {
+                    articleData: {
+                        title: '',
+                        content: ''
+                    },
+                    isNew: true,
+                    saving: false,
+                    alertMessage: '',
+                    alertType: 'alert-success'
+                }
+            },
+            computed: {
+                currentUser() {
+                    return this.$root.currentUser;
+                }
+            },
+            async mounted() {
+                // Check if we're editing an existing article
+                const aid = this.$route.params.aid;
+                if (aid && aid !== 'new') {
+                    this.isNew = false;
+                    await this.loadArticle(aid);
+                }
+            },
+            methods: {
+                async loadArticle(aid) {
+                    try {
+                        // Load user's articles to find the one to edit
+                        const response = await fetch('/list_my_articles');
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            const article = data.articles.find(a => a.aid === aid);
+                            if (article) {
+                                this.articleData = {
+                                    title: article.title,
+                                    content: article.content
+                                };
+                            } else {
+                                this.showAlert('Article not found', 'error');
+                                this.$router.push('/');
+                            }
+                        } else {
+                            this.showAlert('Failed to load article: ' + data.message, 'error');
+                        }
+                    } catch (error) {
+                        this.showAlert('Error loading article: ' + error.message, 'error');
+                    }
+                },
+                async saveArticle() {
+                    if (!this.articleData.title || !this.articleData.content) {
+                        this.showAlert('Please fill in both title and content', 'error');
+                        return;
+                    }
+                    
+                    this.saving = true;
+                    try {
+                        const url = this.isNew ? '/post_article' : '/modify_article';
+                        const body = this.isNew 
+                            ? { title: this.articleData.title, content: this.articleData.content }
+                            : { aid: this.$route.params.aid, content: this.articleData.content };
+                        
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(body)
+                        });
+                        
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            this.showAlert(
+                                this.isNew ? 'Article published successfully!' : 'Article updated successfully!', 
+                                'success'
+                            );
+                            setTimeout(() => {
+                                this.$router.push('/');
+                            }, 1500);
+                        } else {
+                            this.showAlert('Failed to save article: ' + data.message, 'error');
+                        }
+                    } catch (error) {
+                        this.showAlert('Error saving article: ' + error.message, 'error');
+                    } finally {
+                        this.saving = false;
+                    }
+                },
+                goBack() {
+                    this.$router.go(-1);
+                },
+                showAlert(message, type) {
+                    this.alertMessage = message;
+                    this.alertType = type === 'success' ? 'alert-success' : 'alert-error';
+                    setTimeout(() => {
+                        this.alertMessage = '';
+                    }, 3000);
+                }
+            }
+        };
+
+        // Define routes
+        const routes = [
+            { path: '/', component: Home },
+            { path: '/user/:uid/articles', component: UserArticles },
+            { path: '/article/:aid', component: ArticleDetail },
+            { path: '/article/edit/:aid', component: EditArticle }
+        ];
+
+        // Create router instance
+        const router = VueRouter.createRouter({
+            history: VueRouter.createWebHistory(),
+            routes
+        });
+
+        // Create Vue app
+        const app = Vue.createApp({
+            data() {
+                return {
+                    currentUser: null
+                }
+            },
+            methods: {
+                setCurrentUser(user) {
+                    this.currentUser = user;
+                    // If we have a user, try to get their article count
+                    if (user) {
+                        this.fetchUserArticleCount();
+                    }
+                },
+                async fetchUserArticleCount() {
+                    try {
+                        const response = await fetch('/list_my_articles');
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            this.currentUser.articleCount = data.articles.length;
+                        }
+                    } catch (error) {
+                        console.error('Error fetching user articles:', error);
+                    }
+                }
+            }
+        });
+
+        // Use router
+        app.use(router);
+
+        // Mount app
+        app.mount('#app');
+    </script>
+</body>
+</html>

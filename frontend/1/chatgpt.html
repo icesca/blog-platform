@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Blog Platform</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      color: #333;
+    }
+    header {
+      background: #333;
+      color: #fff;
+      padding: 1rem;
+      text-align: center;
+    }
+    main {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      gap: 1rem;
+      padding: 1rem;
+    }
+    section {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    h2 { margin-top: 0; }
+    .clickable { color: blue; cursor: pointer; text-decoration: underline; }
+    .article-preview { border-bottom: 1px solid #ddd; margin-bottom: 1rem; padding-bottom: .5rem; }
+    .hidden { display: none; }
+    @media(max-width: 900px) {
+      main { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>My Blog Platform</h1>
+  </header>
+
+  <main>
+    <!-- User List -->
+    <section id="user-list">
+      <h2>Users</h2>
+      <div id="users"></div>
+    </section>
+
+    <!-- Latest Articles -->
+    <section id="latest-articles">
+      <h2>Latest Articles</h2>
+      <div id="articles"></div>
+    </section>
+
+    <!-- Login Info -->
+    <section id="login-info">
+      <h2>Account</h2>
+      <div id="auth"></div>
+    </section>
+  </main>
+
+  <!-- Dynamic Pages -->
+  <section id="page" class="hidden" style="padding:1rem;"></section>
+
+  <script>
+    async function fetchJSON(url, options={}) {
+      let res = await fetch(url, options);
+      return res.json();
+    }
+
+    async function loadUsers() {
+      let data = await fetchJSON('/list_users');
+      if (data.status === 'success') {
+        document.getElementById('users').innerHTML =
+          data.users.map(u => `<div><span class="clickable" onclick="showUserArticles('${u.uid}','${u.username}')">${u.username}</span> (${u.num_of_articles})</div>`).join('');
+      }
+    }
+
+    async function loadLatestArticles() {
+      let data = await fetchJSON('/list_latest_articles');
+      if (data.status === 'success') {
+        document.getElementById('articles').innerHTML =
+          data.articles.map(a => `
+            <div class="article-preview clickable" onclick="showArticle('${a.aid}')">
+              <h3>${a.title}</h3>
+              <small>${a.time} | ${a.username}</small>
+              <p>${a.content.slice(0,100)}...</p>
+            </div>`).join('');
+      }
+    }
+
+    async function checkLogin() {
+      let data = await fetchJSON('/check_loggedin');
+      let authDiv = document.getElementById('auth');
+      if (data.status === 'success') {
+        authDiv.innerHTML = `
+          <p>Logged in as <b>${data.userId}</b></p>
+          <button onclick="showMyArticles()">My Articles</button>
+          <button onclick="showEditor()">New Article</button>
+          <button onclick="logout()">Logout</button>
+        `;
+      } else {
+        authDiv.innerHTML = `
+          <input id="login-username" placeholder="Username"><br>
+          <input id="login-password" type="password" placeholder="Password"><br>
+          <button onclick="login()">Login</button>
+          <button onclick="register()">Register</button>
+        `;
+      }
+    }
+
+    async function login() {
+      let username = document.getElementById('login-username').value;
+      let password = document.getElementById('login-password').value;
+      let res = await fetchJSON('/login', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({username, password})
+      });
+      alert(res.message);
+      checkLogin();
+    }
+
+    async function register() {
+      let username = document.getElementById('login-username').value;
+      let password = document.getElementById('login-password').value;
+      let res = await fetchJSON('/register', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({username, password})
+      });
+      alert(res.message);
+      checkLogin();
+    }
+
+    async function logout() {
+      await fetch('/logout');
+      checkLogin();
+    }
+
+    async function showMyArticles() {
+      let data = await fetchJSON('/list_my_articles');
+      renderArticlesPage(data.articles, true);
+    }
+
+    async function showUserArticles(uid, username) {
+      let data = await fetchJSON('/list_user_articles', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({uid})
+      });
+      renderArticlesPage(data.articles, false, username);
+    }
+
+    function renderArticlesPage(articles, mine=false, username="") {
+      let page = document.getElementById('page');
+      page.classList.remove('hidden');
+      page.innerHTML = `<h2>${mine? 'My Articles': username+"'s Articles"}</h2>` +
+        articles.map(a => `
+          <div>
+            <span class="clickable" onclick="showArticle('${a.aid}')">${a.title}</span>
+            <small>${a.time}</small>
+            ${mine? `<button onclick=\"modifyArticle('${a.aid}','${a.title}','${a.content.replace(/"/g,'&quot;')}')\">Modify</button>
+                     <button onclick=\"deleteArticle('${a.aid}')\">Delete</button>`:''}
+          </div>`).join('');
+    }
+
+    async function showArticle(aid) {
+      // For simplicity, reuse latest/my/user data already includes content
+      let all = document.querySelectorAll('#articles div, #page div');
+      let found;
+      for (let div of all) {
+        if (div.innerHTML.includes(`showArticle('${aid}')`)) {
+          found = div;
+          break;
+        }
+      }
+      if (!found) return;
+      let title = found.querySelector('h3')?.innerText || found.querySelector('span')?.innerText;
+      let content = found.querySelector('p')?.innerText || '';
+      document.getElementById('page').classList.remove('hidden');
+      document.getElementById('page').innerHTML = `
+        <h2>${title}</h2>
+        <p>${content}</p>
+        <button onclick="history.back()">Back</button>
+      `;
+    }
+
+    function showEditor(aid=null, oldTitle="", oldContent="") {
+      let page = document.getElementById('page');
+      page.classList.remove('hidden');
+      page.innerHTML = `
+        <h2>${aid? 'Modify Article':'New Article'}</h2>
+        <input id="editor-title" placeholder="Title" value="${oldTitle}"><br><br>
+        <textarea id="editor-content" rows="10" style="width:100%">${oldContent}</textarea><br>
+        <button onclick="${aid? `submitModification('${aid}')`:'submitArticle()'}">${aid? 'Publish Modification':'Publish'}</button>
+      `;
+    }
+
+    async function submitArticle() {
+      let title = document.getElementById('editor-title').value;
+      let content = document.getElementById('editor-content').value;
+      let res = await fetchJSON('/post_article', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({title, content})
+      });
+      alert(res.message);
+    }
+
+    function modifyArticle(aid, title, content) {
+      showEditor(aid, title, content);
+    }
+
+    async function submitModification(aid) {
+      let content = document.getElementById('editor-content').value;
+      let res = await fetchJSON('/modify_article', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({aid, content})
+      });
+      alert(res.message);
+    }
+
+    async function deleteArticle(aid) {
+      let res = await fetchJSON('/delete_article', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({aid})
+      });
+      alert(res.message);
+      showMyArticles();
+    }
+
+    // Initialize
+    loadUsers();
+    loadLatestArticles();
+    checkLogin();
+  </script>
+</body>
+</html>

@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar, .main-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            font-size: 1.2em;
+        }
+
+        .user-item, .article-item {
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .user-item:hover, .article-item:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .article-preview {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        .article-meta {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        .login-form, .register-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .user-info {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .user-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .page {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .back-btn {
+            margin-bottom: 20px;
+        }
+
+        .article-actions {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            border: 1px solid #c3e6cb;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .no-content {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Blog Platform</h1>
+        </div>
+
+        <!-- Main page -->
+        <div id="main-page">
+            <div class="main-content">
+                <!-- User List Sidebar -->
+                <div class="sidebar">
+                    <h2 class="section-title">Users</h2>
+                    <div id="user-list" class="loading">Loading users...</div>
+                </div>
+
+                <!-- Latest Articles Main Section -->
+                <div class="main-section">
+                    <h2 class="section-title">Latest Articles</h2>
+                    <div id="article-list" class="loading">Loading articles...</div>
+                </div>
+
+                <!-- Login/User Info Sidebar -->
+                <div class="sidebar">
+                    <h2 class="section-title">Account</h2>
+                    <div id="login-section">
+                        <div id="not-logged-in">
+                            <div class="login-form">
+                                <h3>Login</h3>
+                                <div id="login-error" class="error-message hidden"></div>
+                                <div class="form-group">
+                                    <label>Username:</label>
+                                    <input type="text" id="login-username">
+                                </div>
+                                <div class="form-group">
+                                    <label>Password:</label>
+                                    <input type="password" id="login-password">
+                                </div>
+                                <button class="btn" onclick="login()">Login</button>
+                            </div>
+                            
+                            <div class="register-form">
+                                <h3>Register</h3>
+                                <div id="register-error" class="error-message hidden"></div>
+                                <div class="form-group">
+                                    <label>Username:</label>
+                                    <input type="text" id="register-username">
+                                </div>
+                                <div class="form-group">
+                                    <label>Password:</label>
+                                    <input type="password" id="register-password">
+                                </div>
+                                <button class="btn" onclick="register()">Register</button>
+                            </div>
+                        </div>
+
+                        <div id="logged-in" class="hidden">
+                            <div class="user-info">
+                                <div id="user-info-content"></div>
+                            </div>
+                            <div class="user-actions">
+                                <button class="btn" onclick="showNewArticlePage()">Write New Article</button>
+                                <button class="btn btn-secondary" onclick="showMyArticles()">My Articles</button>
+                                <button class="btn btn-secondary" onclick="logout()">Logout</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Article Editor Page -->
+        <div id="article-editor-page" class="page hidden">
+            <button class="btn btn-secondary back-btn" onclick="showMainPage()">← Back to Main</button>
+            <h2 id="editor-title">Write New Article</h2>
+            <div id="editor-error" class="error-message hidden"></div>
+            <div id="editor-success" class="success-message hidden"></div>
+            <div class="form-group">
+                <label>Title:</label>
+                <input type="text" id="article-title" placeholder="Enter article title">
+            </div>
+            <div class="form-group">
+                <label>Content:</label>
+                <textarea id="article-content" placeholder="Write your article content here..."></textarea>
+            </div>
+            <div>
+                <button class="btn" id="publish-btn" onclick="publishArticle()">Publish Article</button>
+                <button class="btn btn-secondary" onclick="showMainPage()">Cancel</button>
+            </div>
+        </div>
+
+        <!-- User Articles Page -->
+        <div id="user-articles-page" class="page hidden">
+            <button class="btn btn-secondary back-btn" onclick="showMainPage()">← Back to Main</button>
+            <h2 id="user-articles-title">Articles</h2>
+            <div id="user-articles-list" class="loading">Loading articles...</div>
+        </div>
+
+        <!-- Article View Page -->
+        <div id="article-view-page" class="page hidden">
+            <button class="btn btn-secondary back-btn" onclick="goBackFromArticle()">← Back</button>
+            <div id="article-content-view"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentPage = 'main';
+        let editingArticleId = null;
+        let lastUserArticlesUserId = null;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+            loadUsers();
+            loadLatestArticles();
+        });
+
+        // Utility function to show messages
+        function showMessage(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = isError ? 'error-message' : 'success-message';
+            element.classList.remove('hidden');
+            setTimeout(() => element.classList.add('hidden'), 5000);
+        }
+
+        // API call wrapper
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                };
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+                
+                const response = await fetch(endpoint, options);
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.message || 'Request failed');
+                }
+                
+                return result;
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        // Check login status
+        async function checkLoginStatus() {
+            try {
+                const result = await apiCall('/check_loggedin');
+                if (result.status === 'success' && result.userId) {
+                    currentUser = { userId: result.userId };
+                    await updateUserInfo();
+                    document.getElementById('not-logged-in').classList.add('hidden');
+                    document.getElementById('logged-in').classList.remove('hidden');
+                }
+            } catch (error) {
+                // User not logged in
+                currentUser = null;
+                document.getElementById('not-logged-in').classList.remove('hidden');
+                document.getElementById('logged-in').classList.add('hidden');
+            }
+        }
+
+        // Update user info display
+        async function updateUserInfo() {
+            if (!currentUser) return;
+            
+            try {
+                const result = await apiCall('/list_my_articles');
+                const articleCount = result.articles ? result.articles.length : 0;
+                document.getElementById('user-info-content').innerHTML = 
+                    `<strong>User ID:</strong> ${currentUser.userId}<br><strong>Articles:</strong> ${articleCount}`;
+            } catch (error) {
+                console.error('Failed to update user info:', error);
+            }
+        }
+
+        // Login function
+        async function login() {
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            
+            if (!username || !password) {
+                showMessage('login-error', 'Please fill in all fields', true);
+                return;
+            }
+            
+            try {
+                const result = await apiCall('/login', 'POST', { username, password });
+                currentUser = { userId: result.userId };
+                await updateUserInfo();
+                
+                document.getElementById('not-logged-in').classList.add('hidden');
+                document.getElementById('logged-in').classList.remove('hidden');
+                document.getElementById('login-username').value = '';
+                document.getElementById('login-password').value = '';
+                
+                // Refresh data
+                loadUsers();
+                loadLatestArticles();
+            } catch (error) {
+                showMessage('login-error', error.message, true);
+            }
+        }
+
+        // Register function
+        async function register() {
+            const username = document.getElementById('register-username').value.trim();
+            const password = document.getElementById('register-password').value.trim();
+            
+            if (!username || !password) {
+                showMessage('register-error', 'Please fill in all fields', true);
+                return;
+            }
+            
+            try {
+                const result = await apiCall('/register', 'POST', { username, password });
+                currentUser = { userId: result.userId };
+                await updateUserInfo();
+                
+                document.getElementById('not-logged-in').classList.add('hidden');
+                document.getElementById('logged-in').classList.remove('hidden');
+                document.getElementById('register-username').value = '';
+                document.getElementById('register-password').value = '';
+                
+                // Refresh data
+                loadUsers();
+                loadLatestArticles();
+            } catch (error) {
+                showMessage('register-error', error.message, true);
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                await apiCall('/logout');
+                currentUser = null;
+                
+                document.getElementById('not-logged-in').classList.remove('hidden');
+                document.getElementById('logged-in').classList.add('hidden');
+                
+                // Refresh data
+                loadUsers();
+                loadLatestArticles();
+                showMainPage();
+            } catch (error) {
+                console.error('Logout failed:', error);
+            }
+        }
+
+        // Load users list
+        async function loadUsers() {
+            try {
+                const result = await apiCall('/list_users');
+                const userListEl = document.getElementById('user-list');
+                
+                if (result.users && result.users.length > 0) {
+                    userListEl.innerHTML = result.users.map(user => `
+                        <div class="user-item" onclick="showUserArticles('${user.uid}', '${user.username}')">
+                            <strong>${user.username}</strong>
+                            <div class="article-meta">${user.num_of_articles} articles</div>
+                        </div>
+                    `).join('');
+                } else {
+                    userListEl.innerHTML = '<div class="no-content">No users found</div>';
+                }
+            } catch (error) {
+                document.getElementById('user-list').innerHTML = '<div class="error-message">Failed to load users</div>';
+            }
+        }
+
+        // Load latest articles
+        async function loadLatestArticles() {
+            try {
+                const result = await apiCall('/list_latest_articles');
+                const articleListEl = document.getElementById('article-list');
+                
+                if (result.articles && result.articles.length > 0) {
+                    articleListEl.innerHTML = result.articles.map(article => {
+                        const preview = article.content.length > 150 ? 
+                            article.content.substring(0, 150) + '...' : article.content;
+                        
+                        return `
+                            <div class="article-item" onclick="showArticle('${article.aid}', '${article.title}', '${article.content}', '${article.time}', '${article.username}', '${article.uid}')">
+                                <h3>${article.title}</h3>
+                                <div class="article-preview">${preview}</div>
+                                <div class="article-meta">By ${article.username} on ${new Date(article.time).toLocaleDateString()}</div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    articleListEl.innerHTML = '<div class="no-content">No articles found</div>';
+                }
+            } catch (error) {
+                document.getElementById('article-list').innerHTML = '<div class="error-message">Failed to load articles</div>';
+            }
+        }
+
+        // Show user articles
+        async function showUserArticles(userId, username) {
+            lastUserArticlesUserId = userId;
+            currentPage = 'user-articles';
+            
+            document.getElementById('main-page').classList.add('hidden');
+            document.getElementById('user-articles-page').classList.remove('hidden');
+            document.getElementById('user-articles-title').textContent = `${username}'s Articles`;
+            
+            try {
+                const result = await apiCall('/list_user_articles', 'POST', { uid: userId });
+                const articlesListEl = document.getElementById('user-articles-list');
+                
+                if (result.articles && result.articles.length > 0) {
+                    articlesListEl.innerHTML = result.articles.map(article => {
+                        const isOwner = currentUser && currentUser.userId === userId;
+                        const actionButtons = isOwner ? `
+                            <div style="margin-top: 10px;">
+                                <button class="btn btn-small" onclick="editArticle('${article.aid}', '${article.title}', '${article.content}')">Edit</button>
+                                <button class="btn btn-danger btn-small" onclick="deleteArticle('${article.aid}')">Delete</button>
+                            </div>
+                        ` : '';
+                        
+                        return `
+                            <div class="article-item" onclick="showArticle('${article.aid}', '${article.title}', '${article.content}', '${article.time}', '${username}', '${userId}')">
+                                <h3>${article.title}</h3>
+                                <div class="article-meta">${new Date(article.time).toLocaleDateString()}</div>
+                                ${actionButtons}
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    articlesListEl.innerHTML = '<div class="no-content">No articles found</div>';
+                }
+            } catch (error) {
+                document.getElementById('user-articles-list').innerHTML = '<div class="error-message">Failed to load articles</div>';
+            }
+        }
+
+        // Show my articles
+        async function showMyArticles() {
+            if (!currentUser) return;
+            
+            currentPage = 'user-articles';
+            lastUserArticlesUserId = currentUser.userId;
+            
+            document.getElementById('main-page').classList.add('hidden');
+            document.getElementById('user-articles-page').classList.remove('hidden');
+            document.getElementById('user-articles-title').textContent = 'My Articles';
+            
+            try {
+                const result = await apiCall('/list_my_articles');
+                const articlesListEl = document.getElementById('user-articles-list');
+                
+                if (result.articles && result.articles.length > 0) {
+                    articlesListEl.innerHTML = result.articles.map(article => `
+                        <div class="article-item" onclick="showArticle('${article.aid}', '${article.title}', '${article.content}', '${article.time}', 'You', '${currentUser.userId}')">
+                            <h3>${article.title}</h3>
+                            <div class="article-meta">${new Date(article.time).toLocaleDateString()}</div>
+                            <div style="margin-top: 10px;">
+                                <button class="btn btn-small" onclick="event.stopPropagation(); editArticle('${article.aid}', '${article.title}', '${article.content}')">Edit</button>
+                                <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); deleteArticle('${article.aid}')">Delete</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    articlesListEl.innerHTML = '<div class="no-content">No articles found</div>';
+                }
+            } catch (error) {
+                document.getElementById('user-articles-list').innerHTML = '<div class="error-message">Failed to load articles</div>';
+            }
+        }
+
+        // Show article editor
+        function showNewArticlePage() {
+            currentPage = 'article-editor';
+            editingArticleId = null;
+            
+            document.getElementById('main-page').classList.add('hidden');
+            document.getElementById('article-editor-page').classList.remove('hidden');
+            document.getElementById('editor-title').textContent = 'Write New Article';
+            document.getElementById('publish-btn').textContent = 'Publish Article';
+            document.getElementById('article-title').value = '';
+            document.getElementById('article-content').value = '';
+        }
+
+        // Edit article
+        function editArticle(aid, title, content) {
+            currentPage = 'article-editor';
+            editingArticleId = aid;
+            
+            document.getElementById('main-page').classList.add('hidden');
+            document.getElementById('user-articles-page').classList.add('hidden');
+            document.getElementById('article-view-page').classList.add('hidden');
+            document.getElementById('article-editor-page').classList.remove('hidden');
+            
+            document.getElementById('editor-title').textContent = 'Edit Article';
+            document.getElementById('publish-btn').textContent = 'Publish Changes';
+            document.getElementById('article-title').value = title;
+            document.getElementById('article-content').value = content;
+        }
+
+        // Publish article
+        async function publishArticle() {
+            const title = document.getElementById('article-title').value.trim();
+            const content = document.getElementById('article-content').value.trim();
+            
+            if (!title || !content) {
+                showMessage('editor-error', 'Please fill in both title and content', true);
+                return;
+            }
+            
+            try {
+                if (editingArticleId) {
+                    // Modify existing article
+                    await apiCall('/modify_article', 'POST', { aid: editingArticleId, content: content });
+                    showMessage('editor-success', 'Article updated successfully!');
+                } else {
+                    // Create new article
+                    await apiCall('/post_article', 'POST', { title: title, content: content });
+                    showMessage('editor-success', 'Article published successfully!');
+                }
+                
+                // Refresh data
+                loadUsers();
+                loadLatestArticles();
+                updateUserInfo();
+                
+                setTimeout(() => showMainPage(), 2000);
+            } catch (error) {
+                showMessage('editor-error', error.message, true);
+            }
+        }
+
+        // Delete article
+        async function deleteArticle(aid) {
+            if (!confirm('Are you sure you want to delete this article?')) return;
+            
+            try {
+                await apiCall('/delete_article', 'POST', { aid: aid });
+                
+                // Refresh data
+                loadUsers();
+                loadLatestArticles();
+                updateUserInfo();
+                
+                if (currentPage === 'user-articles') {
+                    showMyArticles();
+                } else {
+                    showMainPage();
+                }
+            } catch (error) {
+                alert('Failed to delete article: ' + error.message);
+            }
+        }
+
+        // Show full article
+        function showArticle(aid, title, content, time, authorName, authorId) {
+            currentPage = 'article-view';
+            
+            document.getElementById('main-page').classList.add('hidden');
+            document.getElementById('user-articles-page').classList.add('hidden');
+            document.getElementById('article-view-page').classList.remove('hidden');
+            
+            const isOwner = currentUser && currentUser.userId === authorId;
+            const actionButtons = isOwner ? `
+                <div class="article-actions">
+                    <button class="btn" onclick="editArticle('${aid}', '${title}', '${content}')">Edit Article</button>
+                    <button class="btn btn-danger" onclick="deleteArticle('${aid}')">Delete Article</button>
+                </div>
+            ` : '';
+            
+            document.getElementById('article-content-view').innerHTML = `
+                <h1>${title}</h1>
+                <div class="article-meta">By ${authorName} on ${new Date(time).toLocaleDateString()}</div>
+                <div style="margin-top: 30px; line-height: 1.8;">
+                    ${content.replace(/\n/g, '<br>')}
+                </div>
+                ${actionButtons}
+            `;
+        }
+
+        // Navigation functions
+        function showMainPage() {
+            currentPage = 'main';
+            document.getElementById('main-page').classList.remove('hidden');
+            document.getElementById('article-editor-page').classList.add('hidden');
+            document.getElementById('user-articles-page').classList.add('hidden');
+            document.getElementById('article-view-page').classList.add('hidden');
+        }
+
+        function goBackFromArticle() {
+            if (lastUserArticlesUserId) {
+                if (lastUserArticlesUserId === currentUser?.userId) {
+                    showMyArticles();
+                } else {
+                    // Need to get username for non-current user
+                    showMainPage(); // Fallback to main page
+                }
+            } else {
+                showMainPage();
+            }
+        }
+
+        // Handle Enter key for login/register forms
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (e.target.id === 'login-username' || e.target.id === 'login-password') {
+                    login();
+                } else if (e.target.id === 'register-username' || e.target.id === 'register-password') {
+                    register();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

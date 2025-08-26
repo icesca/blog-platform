@@ -132,7 +132,7 @@ x list_all_articles
     }
   ]
 
-list_hot_articles
+list_latest_articles
   resp:
   [
     {
