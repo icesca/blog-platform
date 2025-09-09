@@ -80,6 +80,10 @@ int main()
 }
 ```
 
-# TO FIX
+# FIX
 
-应该在 ConnectionPool 模块中修复，该问题并不是应用层的 bug
+在 ConnectionPool 模块中修复，该问题并不是应用层的 bug
+
+复现完后，别忘了在 MySQL 服务端设置 timout 为默认值
+SET GLOBAL wait_timeout = 28800;  -- 8 hours
+SET GLOBAL interactive_timeout = 28800;
